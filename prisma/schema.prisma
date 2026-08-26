@@ -1,0 +1,194 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  WAITER
+  KITCHEN
+}
+
+model Restaurant {
+  id            Int                 @id @default(autoincrement())
+  slug          String              @unique
+  name          String
+  tagline       String?
+  accent        String              @default("#E4A15D")
+  phone         String?
+  address       String?
+  hours         String?
+  hero          String?
+  logo          String?
+  active        Boolean             @default(true)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  settings      RestaurantSettings?
+  users         User[]
+  tables        RestaurantTable[]
+  categories    MenuCategory[]
+  menuItems     MenuItem[]
+  reservations  Reservation[]
+  orders        Order[]
+  notifications Notification[]
+  auditLogs     AuditLog[]
+}
+
+model RestaurantSettings {
+  id                 Int        @id @default(autoincrement())
+  restaurantId       Int        @unique
+  currency           String     @default("KM")
+  language           String     @default("bs")
+  timezone           String     @default("Europe/Sarajevo")
+  reservationEnabled Boolean    @default(true)
+  qrOrderingEnabled  Boolean    @default(true)
+  restaurant         Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id           Int        @id @default(autoincrement())
+  restaurantId Int
+  name         String
+  email        String
+  passwordHash String
+  role         Role
+  active       Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantId, email])
+  @@index([restaurantId, role])
+}
+
+model RestaurantTable {
+  id           Int        @id @default(autoincrement())
+  restaurantId Int
+  name         String
+  zone         String     @default("SALA")
+  capacity     Int        @default(4)
+  status       String     @default("SLOBODAN")
+  x            Int        @default(80)
+  y            Int        @default(80)
+  shape        String     @default("square")
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  orders       Order[]
+
+  @@index([restaurantId, status])
+}
+
+model MenuCategory {
+  id           Int        @id @default(autoincrement())
+  restaurantId Int
+  name         String
+  sortOrder    Int        @default(0)
+  visible      Boolean    @default(true)
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  items        MenuItem[]
+
+  @@unique([restaurantId, name])
+}
+
+model MenuItem {
+  id           Int           @id @default(autoincrement())
+  restaurantId Int
+  categoryId   Int?
+  name         String
+  description  String?
+  price        Decimal       @db.Decimal(10, 2)
+  visible      Boolean       @default(true)
+  sortOrder    Int           @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  restaurant   Restaurant    @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  category     MenuCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  orderItems   OrderItem[]
+
+  @@index([restaurantId, visible])
+}
+
+model Reservation {
+  id           Int        @id @default(autoincrement())
+  restaurantId Int
+  name         String
+  phone        String
+  date         String
+  time         String
+  guests       Int
+  zone         String?
+  message      String?
+  status       String     @default("NA ČEKANJU")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId, date, status])
+}
+
+model Order {
+  id           Int             @id @default(autoincrement())
+  restaurantId Int
+  tableId      Int
+  source       String          @default("WAITER")
+  status       String          @default("NOVA")
+  note         String?
+  total        Decimal         @db.Decimal(10, 2)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  paidAt       DateTime?
+  restaurant   Restaurant      @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  table        RestaurantTable @relation(fields: [tableId], references: [id], onDelete: Restrict)
+  items        OrderItem[]
+  payment      Payment?
+
+  @@index([restaurantId, status, createdAt])
+}
+
+model OrderItem {
+  id         Int       @id @default(autoincrement())
+  orderId    Int
+  menuItemId Int?
+  name       String
+  price      Decimal   @db.Decimal(10, 2)
+  qty        Int
+  order      Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem   MenuItem? @relation(fields: [menuItemId], references: [id], onDelete: SetNull)
+}
+
+model Payment {
+  id        Int      @id @default(autoincrement())
+  orderId   Int      @unique
+  amount    Decimal  @db.Decimal(10, 2)
+  method    String   @default("CASH")
+  createdAt DateTime @default(now())
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id           Int        @id @default(autoincrement())
+  restaurantId Int
+  text         String
+  type         String     @default("info")
+  read         Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId, read, createdAt])
+}
+
+model AuditLog {
+  id           Int        @id @default(autoincrement())
+  restaurantId Int
+  userId       Int?
+  action       String
+  entity       String?
+  entityId     String?
+  meta         Json?
+  createdAt    DateTime   @default(now())
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId, createdAt])
+}

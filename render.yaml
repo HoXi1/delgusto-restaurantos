@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: del-gusto-restaurant-os
+    runtime: node
+    plan: starter
+    buildCommand: npm install && npx prisma generate
+    startCommand: npx prisma migrate deploy && node prisma/seed.js && node server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: del-gusto-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: APP_ORIGIN
+        sync: false
+      - key: SEED_ADMIN_EMAIL
+        value: admin@delgusto.ba
+      - key: SEED_ADMIN_PASSWORD
+        sync: false
+databases:
+  - name: del-gusto-db
+    plan: basic-256mb

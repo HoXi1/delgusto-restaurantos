@@ -1,0 +1,34 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: delgusto
+      POSTGRES_USER: delgusto
+      POSTGRES_PASSWORD: delgusto_local_change_me
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U delgusto -d delgusto"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      DATABASE_URL: postgresql://delgusto:delgusto_local_change_me@postgres:5432/delgusto?schema=public
+      JWT_SECRET: change-this-before-public-deploy-please-use-64-random-characters
+      APP_ORIGIN: http://localhost:5000
+      SEED_ADMIN_EMAIL: admin@delgusto.ba
+      SEED_ADMIN_PASSWORD: ChangeThisImmediately!2026
+    ports:
+      - "5000:5000"
+    command: sh -c "npx prisma migrate deploy && node prisma/seed.js && node server.js"
+volumes:
+  postgres_data:
