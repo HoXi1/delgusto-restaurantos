@@ -117,8 +117,36 @@ function renderWebsite(){
           <div class="hero-actions"><button class="btn xl" id="heroReserve">Rezerviši sto ${icon('arrow')}</button><button class="btn xl ghost" id="heroMenu">Pogledaj jelovnik</button></div>
           <div class="hero-meta"><div><small>LOKACIJA</small><b>${escapeHtml(r.address)}</b></div><div><small>RADNO VRIJEME</small><b>${escapeHtml(r.hours)}</b></div><div><small>REZERVACIJE</small><b>${escapeHtml(r.phone)}</b></div></div>
         </div>
-        <div class="hero-visual"><div class="plate-ring r1"></div><div class="plate-ring r2"></div><div class="plate-core"><span>${r.logo || r.name.slice(0,2)}</span></div><div class="float-card fc1"><small>CHEF'S PICK</small><b>${escapeHtml(m[0]?.name || 'Signature dish')}</b><span>${money(m[0]?.price)}</span></div><div class="float-card fc2"><span class="live-dot"></span><b>Otvoreno danas</b><small>${escapeHtml(r.hours)}</small></div></div>
-      </section>
+<div class="hero-visual hero-photo-visual">
+
+    <div class="hero-photo-frame">
+        <img
+            src="/images/Slika13.png"
+            alt="${escapeHtml(r.name)} signature drink"
+            class="hero-main-photo"
+        >
+
+        <div class="hero-photo-shade"></div>
+
+        <div class="hero-photo-caption">
+            <small>DEL GUSTO</small>
+            <strong>Signature experience.</strong>
+        </div>
+    </div>
+
+    <div class="float-card fc1">
+        <small>CHEF'S PICK</small>
+        <b>${escapeHtml(m[0]?.name || 'Signature dish')}</b>
+        <span>${money(m[0]?.price)}</span>
+    </div>
+
+    <div class="float-card fc2">
+        <span class="live-dot"></span>
+        <b>Otvoreno danas</b>
+        <small>${escapeHtml(r.hours)}</small>
+    </div>
+
+</div>      </section>
 
       <section class="marquee"><div>SEASONAL MENU <span>◆</span> RESERVATIONS <span>◆</span> FINE DINING <span>◆</span> SIGNATURE COCKTAILS <span>◆</span> ${escapeHtml(r.name)} <span>◆</span></div></section>
 
@@ -128,8 +156,101 @@ function renderWebsite(){
         <div class="food-grid" id="foodGrid">${renderFoodCards(m)}</div>
       </section>
 
-      <section class="experience" id="about"><div class="experience-card"><div class="eyebrow">Iskustvo</div><h2>Nije samo večera.<br>To je atmosfera.</h2><p>${escapeHtml(r.name)} spaja kuhinju, dizajn i servis u jedno iskustvo. Bez suvišnog. Bez kompromisa.</p><div class="stats-line"><div><strong>4.9</strong><span>prosječna ocjena</span></div><div><strong>12+</strong><span>signature jela</span></div><div><strong>7/7</strong><span>dana sedmično</span></div></div></div><div class="experience-visual"><div class="exp-grid"></div><div class="quote-mark">“</div><p>Detalji nisu detalji.<br>Oni čine iskustvo.</p></div></section>
+<section class="dg-experience" id="about">
 
+    <div class="dg-experience-head">
+
+        <div>
+            <div class="eyebrow">Del Gusto Experience</div>
+
+            <h2>
+                Više od restorana.<br>
+                Mjesto kojem se vraćaš.
+            </h2>
+        </div>
+
+        <p>
+            ${escapeHtml(r.name)} spaja gastronomiju, ambijent i pažnju
+            prema detaljima u jedno iskustvo. Svjetlo, teksture, okusi i
+            servis dio su iste priče.
+        </p>
+
+    </div>
+
+
+    <div class="dg-gallery">
+
+        <figure class="dg-gallery-item dg-gallery-large">
+            <img src="/images/Slika7.png" alt="Del Gusto interijer">
+            <div class="dg-img-overlay">
+                <span>01</span>
+                <strong>Atmosfera</strong>
+            </div>
+        </figure>
+
+
+        <figure class="dg-gallery-item">
+            <img src="/images/Slika4.png" alt="Del Gusto detalji">
+            <div class="dg-img-overlay">
+                <span>02</span>
+                <strong>Detalji</strong>
+            </div>
+        </figure>
+
+
+        <figure class="dg-gallery-item">
+            <img src="/images/Slika1.png" alt="Del Gusto ambijent">
+            <div class="dg-img-overlay">
+                <span>03</span>
+                <strong>Karakter</strong>
+            </div>
+        </figure>
+
+
+        <figure class="dg-gallery-item">
+            <img src="/images/Slika9.png" alt="Del Gusto gastronomija">
+            <div class="dg-img-overlay">
+                <span>04</span>
+                <strong>Gastronomija</strong>
+            </div>
+        </figure>
+
+
+        <figure class="dg-gallery-item dg-gallery-wide">
+            <img src="/images/Slika6.png" alt="Del Gusto restoran">
+            <div class="dg-img-overlay">
+                <span>05</span>
+                <strong>Experience</strong>
+            </div>
+        </figure>
+
+    </div>
+
+
+    <div class="dg-experience-bottom">
+
+        <div>
+            <strong>4.9</strong>
+            <span>prosječna ocjena</span>
+        </div>
+
+        <div>
+            <strong>Premium</strong>
+            <span>gastronomija & ambijent</span>
+        </div>
+
+        <div>
+            <strong>7/7</strong>
+            <span>dana sedmično</span>
+        </div>
+
+        <button class="btn xl" id="experienceReserve">
+            Rezerviši svoj stol ${icon('arrow')}
+        </button>
+
+    </div>
+
+</section>
       <section class="section-v2 reservation-section" id="reserve">
         <div class="reservation-copy"><div class="eyebrow">Rezervacije</div><h2>Vaš stol<br>vas čeka.</h2><p>Rezervaciju šaljete direktno restoranu. Potvrda i upravljanje rezervacijom vode se kroz interni sistem restorana.</p><div class="contact-stack"><span>${icon('clock')} ${escapeHtml(r.hours)}</span><span>${icon('table')} ${escapeHtml(r.address)}</span><span>${icon('users')} ${escapeHtml(r.phone)}</span></div></div>
         <form id="resForm" class="booking-card">
@@ -144,7 +265,9 @@ function renderWebsite(){
   document.querySelector('#staffTop').onclick=()=>go('/login');
   document.querySelector('#reserveTop').onclick=()=>document.querySelector('#reserve').scrollIntoView({behavior:'smooth'});
   document.querySelector('#heroReserve').onclick=()=>document.querySelector('#reserve').scrollIntoView({behavior:'smooth'});
-  document.querySelector('#heroMenu').onclick=()=>document.querySelector('#menu').scrollIntoView({behavior:'smooth'});
+    document.querySelector('#heroMenu').onclick = () => document.querySelector('#menu').scrollIntoView({ behavior: 'smooth' });
+    document.querySelector('#experienceReserve').onclick = () =>
+        document.querySelector('#reserve').scrollIntoView({ behavior: 'smooth' });
   document.querySelector('#staffLogin').onclick=()=>go('/login');
   document.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-cat]').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelector('#foodGrid').innerHTML=renderFoodCards(m.filter(x=>x.category===b.dataset.cat));});
   document.querySelector('#resForm').onsubmit=async e=>{e.preventDefault();const btn=e.target.querySelector('button');btn.disabled=true;try{await api(`/api/public/${r.slug}/reservations`,{method:'POST',body:JSON.stringify(Object.fromEntries(new FormData(e.target)))});toast('Rezervacija je poslana.');e.target.reset()}catch(err){toast(err.message,'err')}finally{btn.disabled=false}};
@@ -197,8 +320,389 @@ function dashboardPage(){
 function tablesPage(){return `<div class="page-toolbar"><div><p>Vizuelni raspored i trenutno stanje sale.</p></div><button class="btn" id="addTable">${icon('plus')} Dodaj sto</button></div><div class="floor-shell"><div class="floor-toolbar"><div><span class="legend free"></span>Slobodan</div><div><span class="legend busy"></span>Zauzet</div><div class="floor-zone">GLAVNA SALA</div></div><div class="floor-v2">${state.tables.map(t=>`<button class="table-v2 ${t.status==='ZAUZET'?'busy':''}" style="left:${Math.min(Number(t.x||80),760)}px;top:${Math.min(Number(t.y||80),460)}px" data-table="${t.id}"><span class="table-top">${t.capacity} mjesta</span><b>${escapeHtml(t.name)}</b><small>${escapeHtml(t.zone)}</small>${t.status==='ZAUZET'?'<i>AKTIVNO</i>':''}</button>`).join('')}</div></div>`}
 function reservationsPage(){const rows=state.reservations;return `<div class="page-toolbar"><p>Upravljanje dolascima i zahtjevima gostiju.</p><div class="search-box">${icon('search')}<input placeholder="Pretraži rezervacije" id="resSearch"></div></div><div class="os-card table-card"><table class="data-table"><thead><tr><th>Gost</th><th>Termin</th><th>Gosti</th><th>Zona</th><th>Status</th><th></th></tr></thead><tbody id="resBody">${renderReservations(rows)}</tbody></table></div>`}
 function renderReservations(rows){return rows.map(r=>`<tr><td><div class="person-cell"><div class="avatar sm">${escapeHtml((r.name||'?').split(' ').map(x=>x[0]).join('').slice(0,2))}</div><div><b>${escapeHtml(r.name)}</b><span>${escapeHtml(r.phone)}</span></div></div></td><td><b>${escapeHtml(r.date||'')}</b><span class="sub">${escapeHtml(r.time||'')}</span></td><td>${r.guests}</td><td>${escapeHtml(r.zone||'—')}</td><td><span class="order-state ${statusClass(r.status)}">${escapeHtml(r.status)}</span></td><td><div class="row-actions">${r.status==='NA ČEKANJU'?`<button class="mini-btn ok" data-res-ok="${r.id}">${icon('check')}</button><button class="mini-btn" data-res-no="${r.id}">${icon('x')}</button>`:''}</div></td></tr>`).join('')}
-function menuPage(){const cats=[...new Set(state.menu.map(x=>x.category))];return `<div class="page-toolbar"><div class="menu-tabs"><button class="chip active">Sve</button>${cats.map(c=>`<button class="chip">${escapeHtml(c)}</button>`).join('')}</div><button class="btn" id="addMenu">${icon('plus')} Novo jelo</button></div><div class="menu-admin-v2">${state.menu.map((i,idx)=>`<article class="menu-admin-card"><div class="mac-art"><span>${String(idx+1).padStart(2,'0')}</span><div>✦</div></div><div class="mac-body"><div class="row"><span class="category-label">${escapeHtml(i.category)}</span><span class="visibility ${i.visible?'on':''}">${i.visible?'AKTIVNO':'SKRIVENO'}</span></div><h3>${escapeHtml(i.name)}</h3><p>${escapeHtml(i.description||'Bez opisa')}</p><div class="row mac-bottom"><strong>${money(i.price)}</strong><div><button class="mini-btn" data-menu-edit="${i.id}">${icon('edit')}</button><button class="mini-btn danger" data-menu-del="${i.id}">${icon('x')}</button></div></div></div></article>`).join('')}</div>`}
-function ordersPage(){return `<div class="page-toolbar"><div class="status-tabs"><span class="active">Sve</span><span>Nove</span><span>Priprema</span><span>Završene</span></div><div class="live-label"><span></span> ažuriranje uživo</div></div><div class="order-board">${state.orders.length?state.orders.map(orderCard).join(''):'<div class="empty-state">Nema narudžbi.</div>'}</div>`}
+function menuPage() {
+    const cats = [...new Set(state.menu.map(x => x.category))];
+
+    return `
+        <div class="menu-sticky-toolbar">
+
+            <div class="menu-tabs">
+                <button
+                    class="chip active"
+                    data-menu-cat="__ALL__">
+                    Sve
+                </button>
+
+                ${cats.map(c => `
+                    <button
+                        class="chip"
+                        data-menu-cat="${escapeHtml(c)}">
+                        ${escapeHtml(c)}
+                    </button>
+                `).join('')}
+            </div>
+
+            <button class="btn menu-add-btn" id="addMenu">
+                ${icon('plus')}
+                Novo jelo
+            </button>
+
+        </div>
+
+        <div class="menu-admin-v2" id="menuAdminGrid">
+            ${renderMenuAdminCards(state.menu)}
+        </div>
+    `;
+}
+
+
+function renderMenuAdminCards(items) {
+
+    if (!items.length) {
+        return `
+            <div class="empty-state">
+                Nema artikala u ovoj kategoriji.
+            </div>
+        `;
+    }
+
+    return items.map((i, idx) => `
+
+        <article class="menu-admin-card">
+
+            <div class="mac-art">
+
+                <span>
+                    ${String(idx + 1).padStart(2, '0')}
+                </span>
+
+                <div>✦</div>
+
+            </div>
+
+            <div class="mac-body">
+
+                <div class="row">
+
+                    <span class="category-label">
+                        ${escapeHtml(i.category)}
+                    </span>
+
+                    <span class="visibility ${i.visible ? 'on' : ''}">
+                        ${i.visible ? 'AKTIVNO' : 'SKRIVENO'}
+                    </span>
+
+                </div>
+
+                <h3>
+                    ${escapeHtml(i.name)}
+                </h3>
+
+                <p>
+                    ${escapeHtml(i.description || 'Bez opisa')}
+                </p>
+
+                <div class="row mac-bottom">
+
+                    <strong>
+                        ${money(i.price)}
+                    </strong>
+
+                    <div>
+
+                        <button
+                            class="mini-btn"
+                            data-menu-edit="${i.id}"
+                            title="Uredi">
+                            ${icon('edit')}
+                        </button>
+
+                        <button
+                            class="mini-btn danger"
+                            data-menu-del="${i.id}"
+                            title="Obriši">
+                            ${icon('x')}
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </article>
+
+    `).join('');
+}
+
+
+function openMenuModal(item = null) {
+
+    const cats = [...new Set(state.menu.map(x => x.category))];
+
+    const wrap = document.createElement('div');
+
+    wrap.className = 'menu-modal-wrap';
+
+    wrap.innerHTML = `
+
+        <div class="menu-modal">
+
+            <button
+                class="modal-close"
+                type="button"
+                title="Zatvori">
+                ${icon('x')}
+            </button>
+
+            <div class="eyebrow">
+                Jelovnik
+            </div>
+
+            <h2>
+                ${item ? 'Uredi jelo' : 'Novo jelo'}
+            </h2>
+
+            <p>
+                ${item
+            ? 'Promijeni podatke artikla i sačuvaj izmjene.'
+            : 'Dodaj novi artikal u Del Gusto jelovnik.'
+        }
+            </p>
+
+            <form id="menuItemForm" class="form-grid">
+
+                <label class="field full">
+
+                    <span>Naziv jela</span>
+
+                    <input
+                        name="name"
+                        required
+                        value="${escapeHtml(item?.name || '')}"
+                        placeholder="npr. Del Gusto steak">
+
+                </label>
+
+
+                <label class="field">
+
+                    <span>Kategorija</span>
+
+                    <input
+                        name="category"
+                        list="menuCats"
+                        required
+                        value="${escapeHtml(item?.category || cats[0] || '')}"
+                        placeholder="Odaberi ili upiši kategoriju">
+
+                    <datalist id="menuCats">
+
+                        ${cats.map(c => `
+                            <option value="${escapeHtml(c)}"></option>
+                        `).join('')}
+
+                    </datalist>
+
+                </label>
+
+
+                <label class="field">
+
+                    <span>Cijena (KM)</span>
+
+                    <input
+                        name="price"
+                        type="number"
+                        min="0"
+                        step="0.10"
+                        required
+                        value="${Number(item?.price || 0)}">
+
+                </label>
+
+
+                <label class="field full">
+
+                    <span>Opis</span>
+
+                    <textarea
+                        name="description"
+                        rows="4"
+                        placeholder="Kratak opis jela...">${escapeHtml(item?.description || '')}</textarea>
+
+                </label>
+
+
+                <label class="menu-visible-toggle full">
+
+                    <input
+                        type="checkbox"
+                        name="visible"
+                        ${item?.visible !== false ? 'checked' : ''}>
+
+                    <span>
+
+                        <b>
+                            Aktivno u jelovniku
+                        </b>
+
+                        <small>
+                            Artikal je vidljiv gostima i konobarima.
+                        </small>
+
+                    </span>
+
+                </label>
+
+
+                <div class="modal-actions full">
+
+                    <button
+                        type="button"
+                        class="btn ghost menu-cancel">
+                        Odustani
+                    </button>
+
+                    <button
+                        class="btn"
+                        type="submit">
+
+                        ${item
+            ? 'Sačuvaj izmjene'
+            : 'Dodaj jelo'
+        }
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+    `;
+
+
+    document.body.appendChild(wrap);
+
+
+    requestAnimationFrame(() => {
+        wrap.classList.add('show');
+    });
+
+
+    const close = () => {
+
+        wrap.classList.remove('show');
+
+        setTimeout(() => {
+            wrap.remove();
+        }, 180);
+    };
+
+
+    wrap.querySelector('.modal-close').onclick = close;
+
+    wrap.querySelector('.menu-cancel').onclick = close;
+
+
+    wrap.onclick = e => {
+
+        if (e.target === wrap) {
+            close();
+        }
+
+    };
+
+
+    wrap.querySelector('#menuItemForm').onsubmit = async e => {
+
+        e.preventDefault();
+
+        const btn = e.submitter;
+
+        btn.disabled = true;
+
+
+        try {
+
+            const f = new FormData(e.target);
+
+
+            const payload = {
+
+                name: String(
+                    f.get('name')
+                ).trim(),
+
+                category: String(
+                    f.get('category')
+                ).trim(),
+
+                price: Number(
+                    f.get('price')
+                ),
+
+                description: String(
+                    f.get('description') || ''
+                ).trim(),
+
+                visible:
+                    f.get('visible') === 'on'
+            };
+
+
+            if (item) {
+
+                await api(
+                    `/api/menu/${item.id}`,
+                    {
+                        method: 'PUT',
+
+                        body: JSON.stringify({
+                            ...item,
+                            ...payload
+                        })
+                    }
+                );
+
+            } else {
+
+                await api(
+                    '/api/menu',
+                    {
+                        method: 'POST',
+                        body: JSON.stringify(payload)
+                    }
+                );
+
+            }
+
+
+            close();
+
+            await loadState();
+
+
+            toast(
+                item
+                    ? 'Jelo je ažurirano.'
+                    : 'Jelo je dodano.'
+            );
+
+
+        } catch (err) {
+
+            toast(
+                err.message,
+                'err'
+            );
+
+            btn.disabled = false;
+        }
+
+    };
+} function ordersPage(){return `<div class="page-toolbar"><div class="status-tabs"><span class="active">Sve</span><span>Nove</span><span>Priprema</span><span>Završene</span></div><div class="live-label"><span></span> ažuriranje uživo</div></div><div class="order-board">${state.orders.length?state.orders.map(orderCard).join(''):'<div class="empty-state">Nema narudžbi.</div>'}</div>`}
 function orderCard(o){const t=state.tables.find(x=>x.id===o.tableId);return `<article class="order-v2 ${statusClass(o.status)}"><div class="order-head"><div><span>${escapeHtml(t?.name||'Sto')} · ${escapeHtml(o.source||'POS')}</span><h3>#${o.id}</h3></div><span class="order-state ${statusClass(o.status)}">${escapeHtml(o.status)}</span></div><div class="order-items">${o.items.map(i=>`<div><b>${i.qty}×</b><span>${escapeHtml(i.name)}</span><strong>${money(i.price*i.qty)}</strong></div>`).join('')}</div>${o.note?`<div class="order-note">${escapeHtml(o.note)}</div>`:''}<div class="order-foot"><span>${icon('clock')} ${fmtTime(o.createdAt)}</span><strong>${money(o.total)}</strong></div></article>`}
 function kitchenPage(){const active=state.orders.filter(o=>!['NAPLAĆENA','OTKAZANA'].includes(o.status));const cols=[['NOVA','NOVE'],['U PRIPREMI','U PRIPREMI'],['SPREMNA','SPREMNO']];return `<div class="kitchen-head"><div><span class="live-dot"></span> KUHINJA UŽIVO</div><div>${active.length} aktivnih narudžbi</div></div><div class="kanban">${cols.map(([status,label])=>`<section class="kanban-col"><header><span>${label}</span><b>${active.filter(o=>o.status===status).length}</b></header><div>${active.filter(o=>o.status===status).map(o=>kitchenTicket(o)).join('')||'<div class="empty-col">Nema narudžbi</div>'}</div></section>`).join('')}</div>`}
 function kitchenTicket(o){const t=state.tables.find(x=>x.id===o.tableId);return `<article class="ticket ${statusClass(o.status)}"><div class="ticket-top"><div><small>${fmtTime(o.createdAt)}</small><h3>${escapeHtml(t?.name||'Sto')}</h3></div><b>#${o.id}</b></div><div class="ticket-items">${o.items.map(i=>`<div><strong>${i.qty}×</strong><span>${escapeHtml(i.name)}</span></div>`).join('')}</div>${o.note?`<div class="ticket-note">NAPOMENA · ${escapeHtml(o.note)}</div>`:''}<div class="ticket-actions">${o.status==='NOVA'?`<button class="btn full-btn" data-order-status="${o.id}" data-status="U PRIPREMI">Započni pripremu</button>`:o.status==='U PRIPREMI'?`<button class="btn full-btn success" data-order-status="${o.id}" data-status="SPREMNA">Označi kao spremno</button>`:`<div class="ready-banner">${icon('check')} SPREMNO ZA SERVIS</div>`}</div></article>`}
@@ -215,10 +719,47 @@ function bindPageEvents(){
   document.querySelector('#resSearch')?.addEventListener('input',e=>{const q=e.target.value.toLowerCase();document.querySelector('#resBody').innerHTML=renderReservations(state.reservations.filter(r=>`${r.name} ${r.phone} ${r.date}`.toLowerCase().includes(q)));bindPageEvents()});
   document.querySelectorAll('[data-res-ok]').forEach(b=>b.onclick=()=>updateReservation(b.dataset.resOk,'POTVRĐENA'));
   document.querySelectorAll('[data-res-no]').forEach(b=>b.onclick=()=>updateReservation(b.dataset.resNo,'OTKAZANA'));
-  document.querySelector('#addMenu')?.addEventListener('click',async()=>{const name=prompt('Naziv jela:');if(!name)return;const price=prompt('Cijena (KM):','12.00');const category=prompt('Kategorija:','Glavna jela');await api('/api/menu',{method:'POST',body:JSON.stringify({name,price:Number(price),category,description:'Novo jelo'})});await loadState();toast('Jelo je dodano.')});
-  document.querySelectorAll('[data-menu-del]').forEach(b=>b.onclick=async()=>{if(!confirm('Obrisati jelo?'))return;await api(`/api/menu/${b.dataset.menuDel}`,{method:'DELETE'});await loadState();toast('Jelo je obrisano.')});
-  document.querySelectorAll('[data-menu-edit]').forEach(b=>b.onclick=async()=>{const i=state.menu.find(x=>x.id===Number(b.dataset.menuEdit));const name=prompt('Naziv:',i.name);if(!name)return;const price=prompt('Cijena:',i.price);await api(`/api/menu/${i.id}`,{method:'PUT',body:JSON.stringify({...i,name,price:Number(price)})});await loadState();toast('Jelo je ažurirano.')});
-  document.querySelectorAll('[data-order-status]').forEach(b=>b.onclick=async()=>{await api(`/api/orders/${b.dataset.orderStatus}/status`,{method:'PUT',body:JSON.stringify({status:b.dataset.status})});await loadState();toast('Status narudžbe je ažuriran.')});
+    document.querySelector('#addMenu')?.addEventListener('click', () => {
+        openMenuModal();
+    });  document.querySelectorAll('[data-menu-del]').forEach(b=>b.onclick=async()=>{if(!confirm('Obrisati jelo?'))return;await api(`/api/menu/${b.dataset.menuDel}`,{method:'DELETE'});await loadState();toast('Jelo je obrisano.')});
+    document.querySelectorAll('[data-menu-edit]').forEach(b => {
+        b.onclick = () => {
+            const item = state.menu.find(
+                x => x.id === Number(b.dataset.menuEdit)
+            );
+
+            if (item) {
+                openMenuModal(item);
+            }
+        };
+    });
+    document.querySelectorAll('[data-menu-cat]').forEach(b => {
+
+        b.onclick = () => {
+
+            document
+                .querySelectorAll('[data-menu-cat]')
+                .forEach(x => x.classList.remove('active'));
+
+            b.classList.add('active');
+
+            const category = b.dataset.menuCat;
+
+            const items =
+                category === '__ALL__'
+                    ? state.menu
+                    : state.menu.filter(
+                        item => item.category === category
+                    );
+
+            document.querySelector('#menuAdminGrid').innerHTML =
+                renderMenuAdminCards(items);
+
+            bindMenuCardEvents();
+        };
+
+    });
+    document.querySelectorAll('[data-order-status]').forEach(b => b.onclick = async () => { await api(`/api/orders/${b.dataset.orderStatus}/status`, { method: 'PUT', body: JSON.stringify({ status: b.dataset.status }) }); await loadState(); toast('Status narudžbe je ažuriran.') });
   document.querySelector('#readAll')?.addEventListener('click',async()=>{await api('/api/notifications/read-all',{method:'PUT'});await loadState()});
   document.querySelector('#clearNotices')?.addEventListener('click',async()=>{await api('/api/notifications',{method:'DELETE'});await loadState()});
   document.querySelectorAll('[data-select-table]').forEach(b=>b.onclick=()=>{selectedTable=Number(b.dataset.selectTable);renderPortal()});
