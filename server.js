@@ -280,6 +280,8 @@ app.get(['/','/del-gusto'],(req,res)=>res.sendFile(path.join(__dirname,'public',
 app.get(['/login','/app','/qr','/del-gusto/login','/del-gusto/app','/del-gusto/qr'],(req,res)=>res.sendFile(path.join(__dirname,'public','index.html')));
 app.get('*',(req,res)=>res.status(404).sendFile(path.join(__dirname,'public','index.html')));
 
-server.listen(PORT,()=>console.log(`Del Gusto Restaurant OS running on :${PORT}`));
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`Del Gusto Restaurant OS running on 0.0.0.0:${PORT}`);
+});
 async function shutdown(){ await prisma.$disconnect(); server.close(()=>process.exit(0)); }
 process.on('SIGTERM',shutdown);process.on('SIGINT',shutdown);
