@@ -8,6 +8,7 @@ let publicData = null;
 let state = null;
 let superState = null;
 let page = 'dashboard';
+let orderFilter = 'ALL';
 let cart = [];
 let selectedTable = 1;
 
@@ -121,10 +122,12 @@ function renderWebsite(){
 
     <div class="hero-photo-frame">
         <img
-            src="/images/Slika13.png"
-            alt="${escapeHtml(r.name)} signature drink"
-            class="hero-main-photo"
-        >
+    src="/images/Slika13.webp"
+    alt="Del Gusto"
+    class="hero-main-photo"
+    decoding="async"
+    fetchpriority="high"
+>
 
         <div class="hero-photo-shade"></div>
 
@@ -181,7 +184,12 @@ function renderWebsite(){
     <div class="dg-gallery">
 
         <figure class="dg-gallery-item dg-gallery-large">
-            <img src="/images/Slika7.png" alt="Del Gusto interijer">
+            <img
+    src="/images/Slika7.webp"
+    alt="..."
+    loading="lazy"
+    decoding="async"
+>
             <div class="dg-img-overlay">
                 <span>01</span>
                 <strong>Atmosfera</strong>
@@ -190,7 +198,7 @@ function renderWebsite(){
 
 
         <figure class="dg-gallery-item">
-            <img src="/images/Slika4.png" alt="Del Gusto detalji">
+            <img src="/images/Slika4.webp" alt="Del Gusto detalji">
             <div class="dg-img-overlay">
                 <span>02</span>
                 <strong>Detalji</strong>
@@ -199,7 +207,7 @@ function renderWebsite(){
 
 
         <figure class="dg-gallery-item">
-            <img src="/images/Slika1.png" alt="Del Gusto ambijent">
+            <img src="/images/Slika1.webp" alt="Del Gusto ambijent">
             <div class="dg-img-overlay">
                 <span>03</span>
                 <strong>Karakter</strong>
@@ -208,7 +216,7 @@ function renderWebsite(){
 
 
         <figure class="dg-gallery-item">
-            <img src="/images/Slika9.png" alt="Del Gusto gastronomija">
+            <img src="/images/Slika9.webp" alt="Del Gusto gastronomija">
             <div class="dg-img-overlay">
                 <span>04</span>
                 <strong>Gastronomija</strong>
@@ -217,7 +225,7 @@ function renderWebsite(){
 
 
         <figure class="dg-gallery-item dg-gallery-wide">
-            <img src="/images/Slika6.png" alt="Del Gusto restoran">
+            <img src="/images/Slika6.webp" alt="Del Gusto restoran">
             <div class="dg-img-overlay">
                 <span>05</span>
                 <strong>Experience</strong>
@@ -292,16 +300,238 @@ const navConfig={
   WAITER:[['waiter','orders','Nova narudžba'],['tables','table','Stolovi'],['orders','orders','Narudžbe']],
   KITCHEN:[['kitchen','chef','Kuhinjski monitor'],['orders','orders','Sve narudžbe']]
 };
-function renderPortal(){
-  if(!state)return;
-  const nav=navConfig[session.user.role] || navConfig.ADMIN;
-  if(!nav.some(x=>x[0]===page))page=nav[0][0];
-  const unread=state.notifications.filter(x=>!x.read).length;
-  app.innerHTML=`<div class="os-shell"><aside class="os-sidebar"><div class="os-logo"><div class="os-mark">${state.restaurant.logo || state.restaurant.name.slice(0,2)}</div><div><b>${escapeHtml(state.restaurant.name)}</b><span>Restaurant OS</span></div></div><nav class="os-nav">${nav.map(n=>`<button data-page="${n[0]}" class="${page===n[0]?'active':''}">${icon(n[1])}<span>${n[2]}</span>${n[0]==='notifications'&&unread?`<em>${unread}</em>`:''}</button>`).join('')}</nav><div class="os-user"><div class="avatar">${escapeHtml(session.user.name.split(' ').map(x=>x[0]).join('').slice(0,2))}</div><div><b>${escapeHtml(session.user.name)}</b><span>${roleLabel(session.user.role)}</span></div><button id="logout" title="Odjava">${icon('logout')}</button></div></aside><main class="os-main"><header class="os-top"><div><div class="breadcrumbs">${escapeHtml(state.restaurant.name)} <span>/</span> ${pageLabel(page)}</div><h1>${pageLabel(page)}</h1></div><div class="top-actions"><div class="system-live"><span></span>LIVE</div><button class="icon-btn" id="notifBtn">${icon('bell')}${unread?`<i>${unread}</i>`:''}</button></div></header><section class="os-content" id="pageContent">${renderPage()}</section></main></div>`;
-  document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>{page=b.dataset.page;renderPortal()});
-  document.querySelector('#logout').onclick=logout;
-  document.querySelector('#notifBtn').onclick=()=>{page='notifications';renderPortal()};
-  bindPageEvents();
+function renderPortal() {
+    if (!state) return;
+
+    const nav = navConfig[session.user.role] || navConfig.ADMIN;
+
+    if (!nav.some(x => x[0] === page)) {
+        page = nav[0][0];
+    }
+
+    const unread = state.notifications.filter(x => !x.read).length;
+
+    app.innerHTML = `
+        <div class="os-shell" id="osShell">
+
+            <div
+                class="mobile-sidebar-overlay"
+                id="mobileSidebarOverlay">
+            </div>
+
+            <aside class="os-sidebar">
+
+                <button
+                    class="mobile-sidebar-close"
+                    id="mobileSidebarClose"
+                    aria-label="Zatvori meni">
+                    ${icon('x')}
+                </button>
+
+
+                <div class="os-logo">
+
+                    <div class="os-mark">
+                        ${state.restaurant.logo || state.restaurant.name.slice(0, 2)}
+                    </div>
+
+                    <div>
+                        <b>${escapeHtml(state.restaurant.name)}</b>
+                        <span>Restaurant OS</span>
+                    </div>
+
+                </div>
+
+
+                <nav class="os-nav">
+
+                    ${nav.map(n => `
+
+                        <button
+                            data-page="${n[0]}"
+                            class="${page === n[0] ? 'active' : ''}">
+
+                            ${icon(n[1])}
+
+                            <span>
+                                ${n[2]}
+                            </span>
+
+                            ${n[0] === 'notifications' && unread
+            ? `<em>${unread}</em>`
+            : ''
+        }
+
+                        </button>
+
+                    `).join('')}
+
+                </nav>
+
+
+                <div class="os-user">
+
+                    <div class="avatar">
+                        ${escapeHtml(
+            session.user.name
+                .split(' ')
+                .map(x => x[0])
+                .join('')
+                .slice(0, 2)
+        )}
+                    </div>
+
+                    <div>
+                        <b>${escapeHtml(session.user.name)}</b>
+                        <span>${roleLabel(session.user.role)}</span>
+                    </div>
+
+                    <button id="logout" title="Odjava">
+                        ${icon('logout')}
+                    </button>
+
+                </div>
+
+            </aside>
+
+
+            <main class="os-main">
+
+                <header class="os-top">
+
+                    <button
+                        class="mobile-menu-btn"
+                        id="mobileMenuBtn"
+                        aria-label="Otvori meni">
+
+                        ${icon('menu')}
+
+                    </button>
+
+
+                    <div class="os-heading">
+
+                        <div class="breadcrumbs">
+
+                            ${escapeHtml(state.restaurant.name)}
+
+                            <span>/</span>
+
+                            ${pageLabel(page)}
+
+                        </div>
+
+                        <h1>
+                            ${pageLabel(page)}
+                        </h1>
+
+                    </div>
+
+
+                    <div class="top-actions">
+
+                        <div class="system-live">
+                            <span></span>
+                            LIVE
+                        </div>
+
+                        <button
+                            class="icon-btn"
+                            id="notifBtn">
+
+                            ${icon('bell')}
+
+                            ${unread
+            ? `<i>${unread}</i>`
+            : ''
+        }
+
+                        </button>
+
+                    </div>
+
+                </header>
+
+
+                <section
+                    class="os-content"
+                    id="pageContent">
+
+                    ${renderPage()}
+
+                </section>
+
+            </main>
+
+        </div>
+    `;
+
+
+    const shell =
+        document.querySelector('#osShell');
+
+    const closeMobileMenu = () => {
+        shell?.classList.remove('mobile-nav-open');
+    };
+
+
+    document
+        .querySelector('#mobileMenuBtn')
+        ?.addEventListener('click', () => {
+
+            shell?.classList.add('mobile-nav-open');
+
+        });
+
+
+    document
+        .querySelector('#mobileSidebarClose')
+        ?.addEventListener(
+            'click',
+            closeMobileMenu
+        );
+
+
+    document
+        .querySelector('#mobileSidebarOverlay')
+        ?.addEventListener(
+            'click',
+            closeMobileMenu
+        );
+
+
+    document
+        .querySelectorAll('[data-page]')
+        .forEach(b => {
+
+            b.onclick = () => {
+
+                page = b.dataset.page;
+
+                closeMobileMenu();
+
+                renderPortal();
+
+            };
+
+        });
+
+
+    document.querySelector('#logout').onclick =
+        logout;
+
+
+    document.querySelector('#notifBtn').onclick =
+        () => {
+
+            page = 'notifications';
+
+            renderPortal();
+
+        };
+
+
+    bindPageEvents();
 }
 function roleLabel(r){return ({ADMIN:'Administrator',WAITER:'Konobar',KITCHEN:'Kuhinja'})[r]||r}
 function pageLabel(p){return ({dashboard:'Kontrolni centar',tables:'Raspored stolova',reservations:'Rezervacije',menu:'Jelovnik',orders:'Narudžbe',kitchen:'Kuhinjski monitor',staff:'Osoblje',settings:'Postavke',notifications:'Obavijesti',qr:'QR naručivanje',waiter:'Nova narudžba'})[p]||p}
@@ -700,77 +930,970 @@ function openMenuModal(item = null) {
 
             btn.disabled = false;
         }
+        }
 
     };
-} function ordersPage(){return `<div class="page-toolbar"><div class="status-tabs"><span class="active">Sve</span><span>Nove</span><span>Priprema</span><span>Završene</span></div><div class="live-label"><span></span> ažuriranje uživo</div></div><div class="order-board">${state.orders.length?state.orders.map(orderCard).join(''):'<div class="empty-state">Nema narudžbi.</div>'}</div>`}
-function orderCard(o){const t=state.tables.find(x=>x.id===o.tableId);return `<article class="order-v2 ${statusClass(o.status)}"><div class="order-head"><div><span>${escapeHtml(t?.name||'Sto')} · ${escapeHtml(o.source||'POS')}</span><h3>#${o.id}</h3></div><span class="order-state ${statusClass(o.status)}">${escapeHtml(o.status)}</span></div><div class="order-items">${o.items.map(i=>`<div><b>${i.qty}×</b><span>${escapeHtml(i.name)}</span><strong>${money(i.price*i.qty)}</strong></div>`).join('')}</div>${o.note?`<div class="order-note">${escapeHtml(o.note)}</div>`:''}<div class="order-foot"><span>${icon('clock')} ${fmtTime(o.createdAt)}</span><strong>${money(o.total)}</strong></div></article>`}
+    function ordersPage() {
+
+        const filters = [
+            ['ALL', 'Sve'],
+            ['NOVA', 'Nove'],
+            ['U PRIPREMI', 'Priprema'],
+            ['DONE', 'Završene']
+        ];
+
+        const visibleOrders = state.orders.filter(o => {
+
+            if (orderFilter === 'ALL') {
+                return true;
+            }
+
+            if (orderFilter === 'DONE') {
+                return [
+                    'SPREMNA',
+                    'POSLUŽENA',
+                    'NAPLAĆENA'
+                ].includes(o.status);
+            }
+
+            return o.status === orderFilter;
+        });
+
+        return `
+        <div class="page-toolbar">
+
+            <div class="status-tabs">
+
+                ${filters.map(([value, label]) => `
+                    <button
+                        data-order-filter="${value}"
+                        class="${orderFilter === value ? 'active' : ''}">
+                        ${label}
+                    </button>
+                `).join('')}
+
+            </div>
+
+            <div class="live-label">
+                <span></span>
+                ažuriranje uživo
+            </div>
+
+        </div>
+
+        <div class="order-board">
+
+            ${visibleOrders.length
+                ? visibleOrders.map(orderCard).join('')
+                : '<div class="empty-state">Nema narudžbi u ovom prikazu.</div>'
+            }
+
+        </div>
+    `;
+    } function orderCard(o){const t=state.tables.find(x=>x.id===o.tableId);return `<article class="order-v2 ${statusClass(o.status)}"><div class="order-head"><div><span>${escapeHtml(t?.name||'Sto')} · ${escapeHtml(o.source||'POS')}</span><h3>#${o.id}</h3></div><span class="order-state ${statusClass(o.status)}">${escapeHtml(o.status)}</span></div><div class="order-items">${o.items.map(i=>`<div><b>${i.qty}×</b><span>${escapeHtml(i.name)}</span><strong>${money(i.price*i.qty)}</strong></div>`).join('')}</div>${o.note?`<div class="order-note">${escapeHtml(o.note)}</div>`:''}<div class="order-foot"><span>${icon('clock')} ${fmtTime(o.createdAt)}</span><strong>${money(o.total)}</strong></div></article>`}
 function kitchenPage(){const active=state.orders.filter(o=>!['NAPLAĆENA','OTKAZANA'].includes(o.status));const cols=[['NOVA','NOVE'],['U PRIPREMI','U PRIPREMI'],['SPREMNA','SPREMNO']];return `<div class="kitchen-head"><div><span class="live-dot"></span> KUHINJA UŽIVO</div><div>${active.length} aktivnih narudžbi</div></div><div class="kanban">${cols.map(([status,label])=>`<section class="kanban-col"><header><span>${label}</span><b>${active.filter(o=>o.status===status).length}</b></header><div>${active.filter(o=>o.status===status).map(o=>kitchenTicket(o)).join('')||'<div class="empty-col">Nema narudžbi</div>'}</div></section>`).join('')}</div>`}
 function kitchenTicket(o){const t=state.tables.find(x=>x.id===o.tableId);return `<article class="ticket ${statusClass(o.status)}"><div class="ticket-top"><div><small>${fmtTime(o.createdAt)}</small><h3>${escapeHtml(t?.name||'Sto')}</h3></div><b>#${o.id}</b></div><div class="ticket-items">${o.items.map(i=>`<div><strong>${i.qty}×</strong><span>${escapeHtml(i.name)}</span></div>`).join('')}</div>${o.note?`<div class="ticket-note">NAPOMENA · ${escapeHtml(o.note)}</div>`:''}<div class="ticket-actions">${o.status==='NOVA'?`<button class="btn full-btn" data-order-status="${o.id}" data-status="U PRIPREMI">Započni pripremu</button>`:o.status==='U PRIPREMI'?`<button class="btn full-btn success" data-order-status="${o.id}" data-status="SPREMNA">Označi kao spremno</button>`:`<div class="ready-banner">${icon('check')} SPREMNO ZA SERVIS</div>`}</div></article>`}
 function staffPage(){return `<div class="page-toolbar"><div><p>Upravljanje pristupom osoblja i ulogama.</p></div><button class="btn" id="addStaff">${icon('plus')} Novi korisnik</button></div><div class="os-card table-card"><table class="data-table"><thead><tr><th>Korisnik</th><th>Email</th><th>Uloga</th><th>Status</th><th></th></tr></thead><tbody>${state.staff.map(u=>`<tr><td><div class="person-cell"><div class="avatar sm">${escapeHtml(u.name.split(' ').map(x=>x[0]).join('').slice(0,2))}</div><div><b>${escapeHtml(u.name)}</b><span>#${u.id}</span></div></div></td><td>${escapeHtml(u.email)}</td><td><span class="order-state new">${roleLabel(u.role)}</span></td><td><span class="order-state ${u.active?'success':'danger'}">${u.active?'AKTIVAN':'PAUZIRAN'}</span></td><td><button class="mini-btn" data-staff-toggle="${u.id}" data-active="${u.active}">${u.active?'Pauziraj':'Aktiviraj'}</button></td></tr>`).join('')}</tbody></table></div>`}
 function settingsPage(){const r=state.restaurant,s=state.settings||{};return `<div class="settings-grid"><section class="os-card"><div class="card-head"><div><span>Javni web</span><h3>Podaci restorana</h3></div></div><form id="settingsForm" class="form-grid settings-form"><label class="field"><span>Telefon</span><input name="phone" value="${escapeHtml(r.phone||'')}"></label><label class="field"><span>Radno vrijeme</span><input name="hours" value="${escapeHtml(r.hours||'')}"></label><label class="field full"><span>Adresa</span><input name="address" value="${escapeHtml(r.address||'')}"></label><label class="field full"><span>Tagline</span><input name="tagline" value="${escapeHtml(r.tagline||'')}"></label><label class="field full"><span>Hero tekst</span><textarea name="hero" rows="3">${escapeHtml(r.hero||'')}</textarea></label><button class="btn full-btn" type="submit">Sačuvaj postavke</button></form></section><section class="os-card"><div class="card-head"><div><span>Moduli</span><h3>Online funkcije</h3></div></div><div class="settings-toggles"><label><input type="checkbox" id="reservationEnabled" ${s.reservationEnabled!==false?'checked':''}><span>Online rezervacije</span></label><label><input type="checkbox" id="qrOrderingEnabled" ${s.qrOrderingEnabled!==false?'checked':''}><span>QR naručivanje</span></label></div></section></div>`}
 function notificationsPage(){return `<div class="page-toolbar"><p>Operativne obavijesti iz sistema.</p><div><button class="btn ghost" id="readAll">Označi pročitano</button> <button class="btn ghost danger-text" id="clearNotices">Obriši sve</button></div></div><div class="os-card notice-list">${state.notifications.length?state.notifications.map(n=>`<div class="notice-v2 ${n.read?'read':''}"><div class="notice-icon">${icon(n.type==='reservation'?'calendar':n.type==='order'?'orders':'bell')}</div><div><b>${escapeHtml(n.text)}</b><span>${fmtDate(n.createdAt)}</span></div>${!n.read?'<i></i>':''}</div>`).join(''):'<div class="empty-state">Nema obavijesti.</div>'}</div>`}
 function qrPage(){return `<div class="qr-layout"><section><div class="eyebrow">Guest ordering</div><h2>QR naručivanje<br>bez čekanja.</h2><p>Svaki sto može imati svoj QR kod. Gost skenira kod, vidi samo jelovnik ovog restorana i šalje narudžbu direktno u kuhinju.</p><div class="qr-list">${state.tables.map(t=>`<a class="qr-row" href="/qr?table=${t.id}" target="_blank"><div class="qr-mini">${icon('qr')}</div><div><b>${escapeHtml(t.name)}</b><span>/qr?table=${t.id}</span></div>${icon('arrow')}</a>`).join('')}</div></section><aside class="qr-preview"><div class="phone"><div class="phone-notch"></div><div class="phone-content"><div class="wordmark small"><span class="wordmark-dot"></span>${escapeHtml(state.restaurant.name)}</div><div class="qr-preview-box">${icon('qr')}</div><h3>Skeniraj. Naruči. Uživaj.</h3><p>Narudžba ide direktno restoranu.</p></div></div></aside></div>`}
-function waiterPage(){return `<div class="waiter-layout"><section class="os-card"><div class="card-head"><div><span>1. korak</span><h3>Odaberi sto</h3></div></div><div class="waiter-tables">${state.tables.map(t=>`<button class="${selectedTable===t.id?'selected':''} ${t.status==='ZAUZET'?'busy':''}" data-select-table="${t.id}"><b>${escapeHtml(t.name)}</b><span>${t.status}</span></button>`).join('')}</div><div class="card-head spaced"><div><span>2. korak</span><h3>Dodaj artikle</h3></div></div><div class="waiter-menu">${state.menu.filter(i=>i.visible).map(i=>`<button data-add-item="${i.id}"><div><b>${escapeHtml(i.name)}</b><span>${escapeHtml(i.category)}</span></div><strong>${money(i.price)}</strong>${icon('plus')}</button>`).join('')}</div></section><aside class="os-card cart-card"><div class="card-head"><div><span>Aktivna narudžba</span><h3>${escapeHtml(state.tables.find(t=>t.id===selectedTable)?.name||'Sto')}</h3></div><span>${cart.reduce((s,i)=>s+i.qty,0)} artikala</span></div><div class="cart-list">${cart.length?cart.map(i=>`<div><span><b>${i.qty}×</b> ${escapeHtml(i.name)}</span><strong>${money(i.price*i.qty)}</strong></div>`).join(''):'<div class="empty-cart">Dodaj artikle iz jelovnika.</div>'}</div><textarea id="orderNote" class="note-input" placeholder="Napomena za kuhinju..."></textarea><div class="cart-total"><span>Ukupno</span><strong>${money(cart.reduce((s,i)=>s+i.price*i.qty,0))}</strong></div><button class="btn xl full-btn" id="sendOrder" ${cart.length?'':'disabled'}>Pošalji u kuhinju ${icon('arrow')}</button></aside></div>`}
-function statusClass(s){s=String(s||'').toUpperCase();if(s.includes('NAPLA')||s.includes('ZAVR')||s.includes('POTVR'))return 'success';if(s.includes('PRIPRE')||s.includes('ČEK'))return 'warning';if(s.includes('OTKAZ'))return 'danger';return 'new'}
+function waiterPage() {
 
-function bindPageEvents(){
-  document.querySelectorAll('[data-jump]').forEach(b=>b.onclick=()=>{page=b.dataset.jump;renderPortal()});
-  document.querySelector('#addTable')?.addEventListener('click',async()=>{const name=prompt('Naziv stola:',`Sto ${state.tables.length+1}`);if(!name)return;await api('/api/tables',{method:'POST',body:JSON.stringify({name})});await loadState();toast('Sto je dodan.')});
-  document.querySelector('#resSearch')?.addEventListener('input',e=>{const q=e.target.value.toLowerCase();document.querySelector('#resBody').innerHTML=renderReservations(state.reservations.filter(r=>`${r.name} ${r.phone} ${r.date}`.toLowerCase().includes(q)));bindPageEvents()});
-  document.querySelectorAll('[data-res-ok]').forEach(b=>b.onclick=()=>updateReservation(b.dataset.resOk,'POTVRĐENA'));
-  document.querySelectorAll('[data-res-no]').forEach(b=>b.onclick=()=>updateReservation(b.dataset.resNo,'OTKAZANA'));
-    document.querySelector('#addMenu')?.addEventListener('click', () => {
-        openMenuModal();
-    });  document.querySelectorAll('[data-menu-del]').forEach(b=>b.onclick=async()=>{if(!confirm('Obrisati jelo?'))return;await api(`/api/menu/${b.dataset.menuDel}`,{method:'DELETE'});await loadState();toast('Jelo je obrisano.')});
-    document.querySelectorAll('[data-menu-edit]').forEach(b => {
-        b.onclick = () => {
-            const item = state.menu.find(
-                x => x.id === Number(b.dataset.menuEdit)
+    const selectedTableData =
+        state.tables.find(t => t.id === selectedTable);
+
+    const cartTotal =
+        cart.reduce(
+            (sum, item) => sum + item.price * item.qty,
+            0
+        );
+
+    return `
+        <div class="waiter-layout">
+
+            <section class="os-card">
+
+                <div class="card-head">
+                    <div>
+                        <span>1. korak</span>
+                        <h3>Odaberi sto</h3>
+                    </div>
+                </div>
+
+                <div class="waiter-tables">
+
+                    ${state.tables.map(t => `
+                        <button
+                            class="
+                                ${selectedTable === t.id ? 'selected' : ''}
+                                ${t.status === 'ZAUZET' ? 'busy' : ''}
+                            "
+                            data-select-table="${t.id}"
+                        >
+                            <b>${escapeHtml(t.name)}</b>
+                            <span>${t.status}</span>
+                        </button>
+                    `).join('')}
+
+                </div>
+
+
+                <div class="card-head spaced">
+                    <div>
+                        <span>2. korak</span>
+                        <h3>Dodaj artikle</h3>
+                    </div>
+                </div>
+
+
+                <div class="waiter-menu">
+
+                    ${state.menu
+            .filter(i => i.visible)
+            .map(i => `
+                            <button data-add-item="${i.id}">
+
+                                <div>
+                                    <b>${escapeHtml(i.name)}</b>
+                                    <span>${escapeHtml(i.category)}</span>
+                                </div>
+
+                                <strong>${money(i.price)}</strong>
+
+                                ${icon('plus')}
+
+                            </button>
+                        `)
+            .join('')}
+
+                </div>
+
+            </section>
+
+
+            <aside class="os-card cart-card">
+
+                <div class="card-head">
+
+                    <div>
+                        <span>Aktivna narudžba</span>
+
+                        <h3>
+                            ${escapeHtml(
+                selectedTableData?.name || 'Sto'
+            )}
+                        </h3>
+                    </div>
+
+                    <span>
+                        ${cart.reduce((sum, i) => sum + i.qty, 0)}
+                        artikala
+                    </span>
+
+                </div>
+
+
+                <div class="cart-list">
+
+                    ${cart.length
+
+            ? cart.map(i => `
+                                <div>
+
+                                    <span>
+                                        <b>${i.qty}×</b>
+                                        ${escapeHtml(i.name)}
+                                    </span>
+
+                                    <strong>
+                                        ${money(i.price * i.qty)}
+                                    </strong>
+
+                                </div>
+                            `).join('')
+
+            : `
+                                <div class="empty-cart">
+                                    Dodaj artikle iz jelovnika.
+                                </div>
+                            `
+        }
+
+                </div>
+
+
+                <textarea
+                    id="orderNote"
+                    class="note-input"
+                    placeholder="Napomena za kuhinju..."
+                ></textarea>
+
+
+                <div class="cart-total">
+
+                    <span>Ukupno</span>
+
+                    <strong>
+                        ${money(cartTotal)}
+                    </strong>
+
+                </div>
+
+
+                ${selectedTableData?.status === 'ZAUZET'
+            ? `
+                            <button
+                                class="btn ghost full-btn"
+                                id="paySelectedTable"
+                                type="button"
+                            >
+                                ${icon('card')}
+                                Naplati i oslobodi sto
+                            </button>
+                        `
+            : ''
+        }
+
+
+                <button
+                    class="btn xl full-btn"
+                    id="sendOrder"
+                    ${cart.length ? '' : 'disabled'}
+                >
+                    Pošalji u kuhinju
+                    ${icon('arrow')}
+                </button>
+
+            </aside>
+
+        </div>
+    `;
+} function statusClass(s) { s = String(s || '').toUpperCase(); if (s.includes('NAPLA') || s.includes('ZAVR') || s.includes('POTVR')) return 'success'; if (s.includes('PRIPRE') || s.includes('ČEK')) return 'warning'; if (s.includes('OTKAZ')) return 'danger'; return 'new' }
+
+function openPaymentModal(table) {
+
+    const activeOrders = state.orders.filter(o =>
+        o.tableId === table.id &&
+        !['NAPLAĆENA', 'OTKAZANA'].includes(o.status)
+    );
+
+    const total = activeOrders.reduce(
+        (sum, o) => sum + Number(o.total),
+        0
+    );
+
+    const modal = document.createElement('div');
+    modal.className = 'payment-modal-overlay';
+
+    modal.innerHTML = `
+        <div class="payment-modal">
+
+            <button class="payment-modal-close" type="button">×</button>
+
+            <div class="payment-modal-label">
+                NAPLATA STOLA
+            </div>
+
+            <h2>${escapeHtml(table.name)}</h2>
+
+            <p class="payment-modal-subtitle">
+                Pregled računa prije naplate
+            </p>
+
+            <div class="payment-summary">
+
+                <div>
+                    <span>Aktivne narudžbe</span>
+                    <strong>${activeOrders.length}</strong>
+                </div>
+
+                <div class="payment-total">
+                    <span>Ukupno za naplatu</span>
+                    <strong>${money(total)}</strong>
+                </div>
+
+            </div>
+
+            <div class="payment-method-title">
+                Način plaćanja
+            </div>
+
+            <div class="payment-methods">
+
+                <button
+                    type="button"
+                    class="payment-method active"
+                    data-payment-method="CASH"
+                >
+                    <span>💵</span>
+                    <div>
+                        <b>Gotovina</b>
+                        <small>Plaćanje gotovinom</small>
+                    </div>
+                </button>
+
+                <button
+                    type="button"
+                    class="payment-method"
+                    data-payment-method="CARD"
+                >
+                    <span>💳</span>
+                    <div>
+                        <b>Kartica</b>
+                        <small>Kartično plaćanje</small>
+                    </div>
+                </button>
+
+            </div>
+
+            <button
+                type="button"
+                class="payment-confirm-btn"
+                id="paymentConfirm"
+            >
+                Naplati ${money(total)} i oslobodi sto
+                <span>→</span>
+            </button>
+
+            <button
+                type="button"
+                class="payment-cancel-btn"
+            >
+                Odustani
+            </button>
+
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    let paymentMethod = 'CASH';
+
+    const closeModal = () => {
+        modal.remove();
+    };
+
+    modal
+        .querySelector('.payment-modal-close')
+        .onclick = closeModal;
+
+    modal
+        .querySelector('.payment-cancel-btn')
+        .onclick = closeModal;
+
+    modal.addEventListener('click', e => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+
+    modal
+        .querySelectorAll('[data-payment-method]')
+        .forEach(btn => {
+
+            btn.onclick = () => {
+
+                modal
+                    .querySelectorAll('[data-payment-method]')
+                    .forEach(x => x.classList.remove('active'));
+
+                btn.classList.add('active');
+
+                paymentMethod = btn.dataset.paymentMethod;
+            };
+
+        });
+
+    modal.querySelector('#paymentConfirm').onclick = async () => {
+
+        const button = modal.querySelector('#paymentConfirm');
+
+        try {
+
+            button.disabled = true;
+            button.innerHTML = 'Naplata u toku...';
+
+            await api(`/api/tables/${table.id}/pay`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    method: paymentMethod
+                })
+            });
+
+            closeModal();
+
+            selectedTable = null;
+
+            await loadState();
+
+            toast(
+                `${table.name} je naplaćen i oslobođen.`
             );
 
-            if (item) {
-                openMenuModal(item);
-            }
-        };
-    });
-    document.querySelectorAll('[data-menu-cat]').forEach(b => {
+        } catch (err) {
 
-        b.onclick = () => {
+            button.disabled = false;
 
-            document
-                .querySelectorAll('[data-menu-cat]')
-                .forEach(x => x.classList.remove('active'));
+            button.innerHTML = `
+                Naplati ${money(total)} i oslobodi sto
+                <span>→</span>
+            `;
 
-            b.classList.add('active');
+            toast(
+                err.message || 'Greška prilikom naplate.',
+                'err'
+            );
+        }
+    };
+}
 
-            const category = b.dataset.menuCat;
+    function bindPageEvents() {
 
-            const items =
-                category === '__ALL__'
-                    ? state.menu
-                    : state.menu.filter(
-                        item => item.category === category
+        document.querySelectorAll('[data-jump]').forEach(b => {
+            b.onclick = () => {
+                page = b.dataset.jump;
+                renderPortal();
+            };
+        });
+
+        document.querySelectorAll('[data-order-filter]').forEach(b => {
+            b.onclick = () => {
+                orderFilter = b.dataset.orderFilter;
+                renderPortal();
+            };
+        });
+
+        document.querySelector('#addTable')?.addEventListener('click', async () => {
+            const name = prompt('Naziv stola:', `Sto ${state.tables.length + 1}`);
+            if (!name) return;
+
+            await api('/api/tables', {
+                method: 'POST',
+                body: JSON.stringify({ name })
+            });
+
+            await loadState();
+            toast('Sto je dodan.');
+        });
+
+        document.querySelector('#resSearch')?.addEventListener('input', e => {
+            const q = e.target.value.toLowerCase();
+
+            document.querySelector('#resBody').innerHTML =
+                renderReservations(
+                    state.reservations.filter(r =>
+                        `${r.name} ${r.phone} ${r.date}`
+                            .toLowerCase()
+                            .includes(q)
+                    )
+                );
+        });
+
+        document.querySelectorAll('[data-res-ok]').forEach(b => {
+            b.onclick = () =>
+                updateReservation(
+                    b.dataset.resOk,
+                    'POTVRĐENA'
+                );
+        });
+
+        document.querySelectorAll('[data-res-no]').forEach(b => {
+            b.onclick = () =>
+                updateReservation(
+                    b.dataset.resNo,
+                    'OTKAZANA'
+                );
+        });
+
+        document.querySelector('#addMenu')?.addEventListener('click', () => {
+            openMenuModal();
+        });
+
+        document.querySelectorAll('[data-menu-del]').forEach(b => {
+            b.onclick = async () => {
+
+                if (!confirm('Obrisati jelo?')) return;
+
+                await api(
+                    `/api/menu/${b.dataset.menuDel}`,
+                    {
+                        method: 'DELETE'
+                    }
+                );
+
+                await loadState();
+                toast('Jelo je obrisano.');
+            };
+        });
+
+        document.querySelectorAll('[data-menu-edit]').forEach(b => {
+            b.onclick = () => {
+
+                const item = state.menu.find(
+                    x => x.id === Number(b.dataset.menuEdit)
+                );
+
+                if (item) {
+                    openMenuModal(item);
+                }
+            };
+        });
+
+        document.querySelectorAll('[data-menu-cat]').forEach(b => {
+
+            b.onclick = () => {
+
+                document
+                    .querySelectorAll('[data-menu-cat]')
+                    .forEach(x =>
+                        x.classList.remove('active')
                     );
 
-            document.querySelector('#menuAdminGrid').innerHTML =
-                renderMenuAdminCards(items);
+                b.classList.add('active');
 
-            bindMenuCardEvents();
-        };
+                const category =
+                    b.dataset.menuCat;
 
-    });
-    document.querySelectorAll('[data-order-status]').forEach(b => b.onclick = async () => { await api(`/api/orders/${b.dataset.orderStatus}/status`, { method: 'PUT', body: JSON.stringify({ status: b.dataset.status }) }); await loadState(); toast('Status narudžbe je ažuriran.') });
-  document.querySelector('#readAll')?.addEventListener('click',async()=>{await api('/api/notifications/read-all',{method:'PUT'});await loadState()});
-  document.querySelector('#clearNotices')?.addEventListener('click',async()=>{await api('/api/notifications',{method:'DELETE'});await loadState()});
-  document.querySelectorAll('[data-select-table]').forEach(b=>b.onclick=()=>{selectedTable=Number(b.dataset.selectTable);renderPortal()});
-  document.querySelectorAll('[data-add-item]').forEach(b=>b.onclick=()=>{const i=state.menu.find(x=>x.id===Number(b.dataset.addItem));const c=cart.find(x=>x.id===i.id);c?c.qty++:cart.push({...i,qty:1});renderPortal()});
-  document.querySelector('#sendOrder')?.addEventListener('click',async()=>{if(!cart.length)return;const note=document.querySelector('#orderNote')?.value||'';await api('/api/orders',{method:'POST',body:JSON.stringify({tableId:selectedTable,items:cart.map(i=>({id:i.id,qty:i.qty})),note,source:'WAITER'})});cart=[];await loadState();toast('Narudžba je poslana u kuhinju.')});
-  document.querySelectorAll('[data-table]').forEach(b=>b.onclick=async()=>{const t=state.tables.find(x=>x.id===Number(b.dataset.table));if(t?.status!=='ZAUZET')return;const active=state.orders.filter(o=>o.tableId===t.id&&!['NAPLAĆENA','OTKAZANA'].includes(o.status));const total=active.reduce((a,o)=>a+Number(o.total),0);if(confirm(`${t.name} ima ${active.length} aktivnih narudžbi (${money(total)}). Naplatiti i osloboditi sto?`)){const method=confirm('OK = Kartica, Cancel = Gotovina')?'CARD':'CASH';await api(`/api/tables/${t.id}/pay`,{method:'POST',body:JSON.stringify({method})});await loadState();toast('Sto je naplaćen i oslobođen.')}});
-  document.querySelector('#addStaff')?.addEventListener('click',async()=>{const name=prompt('Ime korisnika:');if(!name)return;const email=prompt('Email:');if(!email)return;const password=prompt('Početna lozinka (min 8 znakova):');if(!password)return;const role=(prompt('Uloga: ADMIN, WAITER ili KITCHEN','WAITER')||'WAITER').toUpperCase();await api('/api/staff',{method:'POST',body:JSON.stringify({name,email,password,role})});await loadState();toast('Korisnik je kreiran.')});
-  document.querySelectorAll('[data-staff-toggle]').forEach(b=>b.onclick=async()=>{await api(`/api/staff/${b.dataset.staffToggle}`,{method:'PUT',body:JSON.stringify({active:b.dataset.active!=='true'})});await loadState();toast('Status korisnika je ažuriran.')});
-  document.querySelector('#settingsForm')?.addEventListener('submit',async e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.target));d.reservationEnabled=document.querySelector('#reservationEnabled')?.checked??true;d.qrOrderingEnabled=document.querySelector('#qrOrderingEnabled')?.checked??true;await api('/api/settings',{method:'PUT',body:JSON.stringify(d)});await loadState();toast('Postavke su sačuvane.')});
-}
-async function updateReservation(id,status){await api(`/api/reservations/${id}`,{method:'PUT',body:JSON.stringify({status})});await loadState();toast(status==='POTVRĐENA'?'Rezervacija potvrđena.':'Rezervacija otkazana.')}
+                const items =
+                    category === '__ALL__'
+                        ? state.menu
+                        : state.menu.filter(
+                            item =>
+                                item.category === category
+                        );
+
+                document.querySelector('#menuAdminGrid').innerHTML =
+                    renderMenuAdminCards(items);
+
+                bindMenuCardEvents();
+            };
+
+        });
+
+        document.querySelectorAll('[data-order-status]').forEach(b => {
+
+            b.onclick = async () => {
+
+                try {
+
+                    b.disabled = true;
+
+                    await api(
+                        `/api/orders/${b.dataset.orderStatus}/status`,
+                        {
+                            method: 'PUT',
+                            body: JSON.stringify({
+                                status: b.dataset.status
+                            })
+                        }
+                    );
+
+                    await loadState();
+
+                    toast(
+                        'Status narudžbe je ažuriran.'
+                    );
+
+                } catch (err) {
+
+                    b.disabled = false;
+
+                    toast(
+                        err.message ||
+                        'Greška pri promjeni statusa.',
+                        'err'
+                    );
+                }
+            };
+
+        });
+
+        document.querySelector('#readAll')?.addEventListener('click', async () => {
+
+            try {
+
+                await api(
+                    '/api/notifications/read-all',
+                    {
+                        method: 'PUT'
+                    }
+                );
+
+                await loadState();
+
+                toast(
+                    'Sve obavijesti su označene kao pročitane.'
+                );
+
+            } catch (err) {
+
+                toast(
+                    err.message ||
+                    'Greška pri označavanju obavijesti.',
+                    'err'
+                );
+            }
+
+        });
+
+        document.querySelector('#clearNotices')?.addEventListener('click', async () => {
+
+            if (
+                !confirm(
+                    'Obrisati sve obavijesti?'
+                )
+            ) {
+                return;
+            }
+
+            try {
+
+                await api(
+                    '/api/notifications',
+                    {
+                        method: 'DELETE'
+                    }
+                );
+
+                await loadState();
+
+                toast(
+                    'Sve obavijesti su obrisane.'
+                );
+
+            } catch (err) {
+
+                toast(
+                    err.message ||
+                    'Greška pri brisanju obavijesti.',
+                    'err'
+                );
+            }
+
+        });
+
+        document.querySelectorAll('[data-select-table]').forEach(b => {
+
+            b.onclick = () => {
+
+                const tableId = Number(b.dataset.selectTable);
+
+                const table = state.tables.find(
+                    t => t.id === tableId
+                );
+
+                if (!table) return;
+
+                // UVIJEK samo odaberi sto
+                selectedTable = tableId;
+
+                renderPortal();
+            };
+
+        });
+
+        document.querySelector('#paySelectedTable')?.addEventListener('click', () => {
+
+            const table = state.tables.find(
+                t => t.id === selectedTable
+            );
+
+            if (!table) return;
+
+            if (table.status !== 'ZAUZET') return;
+
+            openPaymentModal(table);
+        });
+
+        document.querySelectorAll('[data-add-item]').forEach(b => {
+
+            b.onclick = () => {
+
+                const item =
+                    state.menu.find(
+                        x =>
+                            x.id ===
+                            Number(b.dataset.addItem)
+                    );
+
+                if (!item) return;
+
+                const existing =
+                    cart.find(
+                        x =>
+                            x.id === item.id
+                    );
+
+                if (existing) {
+                    existing.qty++;
+                } else {
+                    cart.push({
+                        ...item,
+                        qty: 1
+                    });
+                }
+
+                renderPortal();
+            };
+
+        });
+
+        document.querySelector('#sendOrder')?.addEventListener('click', async () => {
+
+            if (!cart.length) return;
+
+            const button = document.querySelector('#sendOrder');
+
+            if (button.disabled) return;
+
+            button.disabled = true;
+            button.innerHTML = `Šaljem narudžbu...`;
+
+            const note =
+                document.querySelector('#orderNote')?.value || '';
+
+            try {
+
+                const newOrder = await api('/api/orders', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        tableId: selectedTable,
+                        items: cart.map(i => ({
+                            id: i.id,
+                            qty: i.qty
+                        })),
+                        note,
+                        source: 'WAITER'
+                    })
+                });
+
+                // Lokalno dodaj novu narudžbu
+                state.orders = [
+                    newOrder,
+                    ...state.orders.filter(o => o.id !== newOrder.id)
+                ];
+
+                // Lokalno označi sto kao zauzet
+                state.tables = state.tables.map(t =>
+                    t.id === selectedTable
+                        ? { ...t, status: 'ZAUZET' }
+                        : t
+                );
+
+                // Očisti korpu
+                cart = [];
+
+                // Samo ponovno iscrtaj trenutni CRM
+                // bez dodatnog GET /api/state
+                renderPortal();
+
+                toast('Narudžba je poslana u kuhinju.');
+
+            } catch (err) {
+
+                toast(
+                    err.message || 'Greška prilikom slanja narudžbe.',
+                    'err'
+                );
+
+                button.disabled = false;
+                button.innerHTML =
+                    `Pošalji u kuhinju ${icon('arrow')}`;
+            }
+        });
+
+        document.querySelectorAll('[data-table]').forEach(b => {
+
+            b.onclick = () => {
+
+                const table = state.tables.find(
+                    x => x.id === Number(b.dataset.table)
+                );
+
+                if (!table) return;
+
+                if (table.status !== 'ZAUZET') {
+                    return;
+                }
+
+                openPaymentModal(table);
+            };
+
+        });
+
+        document.querySelector('#addStaff')?.addEventListener('click', async () => {
+
+            const name =
+                prompt('Ime korisnika:');
+
+            if (!name) return;
+
+            const email =
+                prompt('Email:');
+
+            if (!email) return;
+
+            const password =
+                prompt(
+                    'Početna lozinka (min 8 znakova):'
+                );
+
+            if (!password) return;
+
+            const role =
+                (
+                    prompt(
+                        'Uloga: ADMIN, WAITER ili KITCHEN',
+                        'WAITER'
+                    ) || 'WAITER'
+                ).toUpperCase();
+
+            try {
+
+                await api(
+                    '/api/staff',
+                    {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            name,
+                            email,
+                            password,
+                            role
+                        })
+                    }
+                );
+
+                await loadState();
+
+                toast(
+                    'Korisnik je kreiran.'
+                );
+
+            } catch (err) {
+
+                toast(
+                    err.message ||
+                    'Greška pri kreiranju korisnika.',
+                    'err'
+                );
+            }
+
+        });
+
+        document.querySelectorAll('[data-staff-toggle]').forEach(b => {
+
+            b.onclick = async () => {
+
+                try {
+
+                    await api(
+                        `/api/staff/${b.dataset.staffToggle}`,
+                        {
+                            method: 'PUT',
+                            body: JSON.stringify({
+                                active:
+                                    b.dataset.active !== 'true'
+                            })
+                        }
+                    );
+
+                    await loadState();
+
+                    toast(
+                        'Status korisnika je ažuriran.'
+                    );
+
+                } catch (err) {
+
+                    toast(
+                        err.message ||
+                        'Greška pri izmjeni korisnika.',
+                        'err'
+                    );
+                }
+
+            };
+
+        });
+
+        document.querySelector('#settingsForm')?.addEventListener('submit', async e => {
+
+            e.preventDefault();
+
+            const data =
+                Object.fromEntries(
+                    new FormData(e.target)
+                );
+
+            data.reservationEnabled =
+                document.querySelector(
+                    '#reservationEnabled'
+                )?.checked ?? true;
+
+            data.qrOrderingEnabled =
+                document.querySelector(
+                    '#qrOrderingEnabled'
+                )?.checked ?? true;
+
+            try {
+
+                await api(
+                    '/api/settings',
+                    {
+                        method: 'PUT',
+                        body: JSON.stringify(data)
+                    }
+                );
+
+                await loadState();
+
+                toast(
+                    'Postavke su sačuvane.'
+                );
+
+            } catch (err) {
+
+                toast(
+                    err.message ||
+                    'Greška pri čuvanju postavki.',
+                    'err'
+                );
+            }
+
+        });
+    }
+
+    async function updateReservation(id, status) {
+
+        try {
+
+            await api(
+                `/api/reservations/${id}`,
+                {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        status
+                    })
+                }
+            );
+
+            await loadState();
+
+            toast(
+                status === 'POTVRĐENA'
+                    ? 'Rezervacija potvrđena.'
+                    : 'Rezervacija otkazana.'
+            );
+
+        } catch (err) {
+
+            toast(
+                err.message ||
+                'Greška pri izmjeni rezervacije.',
+                'err'
+            );
+        }
+    }
 
 function renderQrGuest(){
   const r=publicData.restaurant;const tableId=Number(new URLSearchParams(location.search).get('table')||publicData.tables[0]?.id);const table=publicData.tables.find(t=>t.id===tableId)||publicData.tables[0];cart=[];

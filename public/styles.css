@@ -420,3 +420,1037 @@
         transform: scale(.9);
     }
 }
+/* =========================================================
+   DEL GUSTO - MOBILE CRM SIDEBAR FIX
+   ========================================================= */
+
+.mobile-menu-btn,
+.mobile-sidebar-close,
+.mobile-sidebar-overlay {
+    display: none;
+}
+
+
+/* TABLET + MOBILE */
+@media (max-width: 900px) {
+
+    .os-shell {
+        display: block !important;
+        min-height: 100vh;
+        width: 100%;
+        overflow-x: hidden;
+    }
+
+
+    .os-main {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+
+    /* SIDEBAR POSTAJE DRAWER */
+
+    .os-sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: auto !important;
+        bottom: 0 !important;
+        width: min(310px, 88vw) !important;
+        height: 100dvh !important;
+        padding: 18px 14px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        background: #080b0e !important;
+        border-right: 1px solid var(--line) !important;
+        border-top: 0 !important;
+        z-index: 1002 !important;
+        transform: translateX(-105%);
+        transition: transform .26s cubic-bezier(.2,.8,.2,1);
+        box-shadow: 25px 0 80px rgba(0,0,0,.58);
+    }
+
+
+    .os-shell.mobile-nav-open .os-sidebar {
+        transform: translateX(0);
+    }
+
+
+    /* TAMNA POZADINA */
+
+    .mobile-sidebar-overlay {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 1001;
+        background: rgba(0,0,0,.64);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .25s ease;
+    }
+
+
+    .os-shell.mobile-nav-open
+    .mobile-sidebar-overlay {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+
+    /* HAMBURGER */
+
+    .mobile-menu-btn {
+        display: grid;
+        place-items: center;
+        width: 43px;
+        height: 43px;
+        flex: 0 0 43px;
+        padding: 0;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #0d1217;
+        color: #fff;
+    }
+
+
+        .mobile-menu-btn .ico {
+            width: 19px;
+            height: 19px;
+        }
+
+
+    /* X DUGME */
+
+    .mobile-sidebar-close {
+        display: grid;
+        place-items: center;
+        position: absolute;
+        top: 18px;
+        right: 14px;
+        width: 38px;
+        height: 38px;
+        padding: 0;
+        border: 1px solid var(--line);
+        border-radius: 11px;
+        background: #10161b;
+        color: #fff;
+        z-index: 5;
+    }
+
+
+        .mobile-sidebar-close .ico {
+            width: 17px;
+            height: 17px;
+        }
+
+
+    /* LOGO */
+
+    .os-logo {
+        display: flex !important;
+        justify-content: flex-start !important;
+        padding-right: 48px !important;
+    }
+
+
+        .os-logo > div:last-child {
+            display: flex !important;
+        }
+
+
+    /* VRATI CIJELI MENI */
+
+    .os-nav {
+        display: flex !important;
+        flex-direction: column !important;
+        grid-template-columns: none !important;
+        gap: 5px !important;
+        padding-top: 18px !important;
+        overflow-y: auto;
+        min-height: 0;
+        scrollbar-width: none;
+    }
+
+
+        .os-nav::-webkit-scrollbar {
+            display: none;
+        }
+
+
+        /* VAŽNO:
+       poništava stari CSS koji krije
+       šestu i naredne stavke */
+
+        .os-nav button,
+        .os-nav button:nth-child(n+6) {
+            display: flex !important;
+            width: 100% !important;
+            height: 46px !important;
+            justify-content: flex-start !important;
+            align-items: center !important;
+            padding: 0 12px !important;
+            font-size: 13px !important;
+        }
+
+
+            .os-nav button span {
+                display: inline !important;
+            }
+
+
+            .os-nav button.active::before {
+                display: block !important;
+                left: -14px !important;
+            }
+
+
+    /* USER NA DNU */
+
+    .os-user {
+        display: grid !important;
+        grid-template-columns: auto 1fr auto !important;
+        justify-items: stretch !important;
+    }
+
+
+        .os-user > div:nth-child(2) {
+            display: flex !important;
+        }
+
+
+        .os-user button {
+            display: block !important;
+        }
+
+
+    /* TOP BAR */
+
+    .os-top {
+        height: 76px !important;
+        padding: 0 14px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px;
+    }
+
+
+    .os-heading {
+        flex: 1;
+        min-width: 0;
+    }
+
+
+    .os-top h1 {
+        margin: 0 !important;
+        font-size: 20px !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+
+    .breadcrumbs {
+        display: none !important;
+    }
+
+
+    .system-live {
+        display: none !important;
+    }
+
+
+    .top-actions {
+        margin-left: auto;
+    }
+
+
+    /* CONTENT */
+
+    .os-content {
+        padding: 18px 14px 40px !important;
+    }
+}
+
+
+/* MANJI TELEFONI */
+
+@media (max-width: 520px) {
+
+    .os-sidebar {
+        width: 88vw !important;
+    }
+
+
+    .os-top {
+        height: 70px !important;
+    }
+
+
+        .os-top h1 {
+            font-size: 18px !important;
+        }
+
+
+    .mobile-menu-btn {
+        width: 40px;
+        height: 40px;
+        flex-basis: 40px;
+    }
+}
+/* =========================================================
+   DEL GUSTO - PUBLIC NAV + READABILITY FIX
+   ========================================================= */
+
+/* ---------- NAVIGATION ---------- */
+
+.site-nav {
+    grid-template-columns: minmax(180px, 1fr) auto minmax(240px, 1fr);
+    gap: 24px;
+}
+
+    .site-nav .wordmark {
+        min-width: 0;
+        white-space: nowrap;
+    }
+
+.site-links {
+    white-space: nowrap;
+}
+
+.site-nav-actions {
+    justify-self: end;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: max-content;
+}
+
+.staff-top {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    min-width: 105px;
+    height: 44px;
+    padding: 0 18px;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.nav-cta {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+
+/* ---------- TEXT READABILITY ---------- */
+
+:root {
+    --muted: #aeb8c4;
+    --muted2: #8995a2;
+}
+
+
+/* PUBLIC WEBSITE */
+
+.site-links {
+    color: #c8d0d8;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+    .site-links a:hover {
+        color: #ffffff;
+    }
+
+
+.hero-copy > p {
+    color: #bcc5ce;
+    font-size: 18px;
+    line-height: 1.75;
+}
+
+
+.hero-meta small {
+    color: #929eaa;
+    font-size: 10px;
+}
+
+
+.hero-meta b {
+    color: #e4e8ec;
+    font-size: 13px;
+}
+
+
+.section-head p,
+.reservation-copy p,
+.dg-experience-head > p {
+    color: #b7c1cb;
+}
+
+
+.food-info p {
+    color: #aeb9c4;
+    font-size: 14px;
+    line-height: 1.65;
+}
+
+
+.food-top span {
+    color: #929eaa;
+    font-size: 10px;
+}
+
+
+.contact-stack {
+    color: #c2cad2;
+}
+
+
+/* FORMS */
+
+.field > span {
+    color: #aeb8c2;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+
+.field input,
+.field select,
+.field textarea {
+    color: #ffffff;
+    font-size: 14px;
+}
+
+
+/* ---------- CRM READABILITY ---------- */
+
+.os-nav button {
+    color: #9faab5;
+    font-size: 13px;
+}
+
+
+    .os-nav button:hover {
+        color: #ffffff;
+    }
+
+
+    .os-nav button.active {
+        color: #ffffff;
+    }
+
+
+.breadcrumbs {
+    color: #8d99a5;
+    font-size: 10px;
+}
+
+
+.dashboard-hero p {
+    color: #aab5c0;
+    font-size: 13px;
+}
+
+
+.page-toolbar p {
+    color: #aab5c0;
+    font-size: 13px;
+}
+
+
+.metric-card > span {
+    color: #98a4b0;
+    font-size: 11px;
+}
+
+
+.metric-card small {
+    color: #8d99a5;
+    font-size: 10px;
+}
+
+
+.activity-main b {
+    font-size: 12px;
+}
+
+
+.activity-main span {
+    color: #8995a2;
+    font-size: 10px;
+}
+
+
+.data-table th {
+    color: #8b97a3;
+    font-size: 9px;
+}
+
+
+.data-table td {
+    font-size: 12px;
+}
+
+
+.person-cell span,
+.sub {
+    color: #8995a2;
+    font-size: 10px;
+}
+
+
+.mac-body h3 {
+    font-size: 16px;
+}
+
+
+.mac-body p {
+    color: #9da9b5;
+    font-size: 11px;
+    line-height: 1.55;
+}
+
+
+.waiter-menu b {
+    font-size: 11px;
+}
+
+
+.waiter-menu span {
+    color: #8f9ba7;
+    font-size: 9px;
+}
+
+
+.ticket-items > div {
+    font-size: 12px;
+}
+
+
+.notice-v2 b {
+    font-size: 12px;
+}
+
+
+.notice-v2 span {
+    color: #8995a2;
+    font-size: 10px;
+}
+
+
+/* ---------- TABLET ---------- */
+
+@media (max-width: 1050px) {
+
+    .site-nav {
+        grid-template-columns: minmax(150px, 1fr) auto;
+        gap: 18px;
+    }
+
+
+    .site-links {
+        display: none;
+    }
+
+
+    .site-nav-actions {
+        justify-self: end;
+    }
+}
+
+
+/* ---------- PHONE ---------- */
+
+@media (max-width: 600px) {
+
+    .site-nav {
+        height: 68px;
+        padding: 0 14px;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 10px;
+    }
+
+
+        .site-nav .wordmark {
+            display: flex;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+
+    .site-nav-actions {
+        min-width: 0;
+        gap: 0;
+    }
+
+
+        .site-nav-actions .nav-cta {
+            display: none !important;
+        }
+
+
+    .staff-top {
+        min-width: auto;
+        height: 40px;
+        padding: 0 13px;
+        font-size: 11px;
+        border-radius: 12px;
+    }
+
+
+    .hero-copy > p {
+        font-size: 16px;
+        line-height: 1.75;
+    }
+
+
+    .section-head p,
+    .reservation-copy p,
+    .dg-experience-head > p {
+        font-size: 15px;
+        line-height: 1.75;
+    }
+
+
+    .field input,
+    .field select,
+    .field textarea {
+        font-size: 16px;
+    }
+}
+/* =========================================================
+   FINAL PUBLIC READABILITY V2
+   ========================================================= */
+
+.site-nav {
+    height: 82px !important;
+    padding: 0 6vw !important;
+}
+
+.site-links {
+    gap: 38px !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    color: #e1e5e9 !important;
+}
+
+    .site-links a {
+        opacity: .9;
+    }
+
+        .site-links a:hover {
+            opacity: 1;
+            color: var(--accent) !important;
+        }
+
+
+/* CRM LOGIN - ODVOJI GA OD JAVNE NAVIGACIJE */
+
+.site-nav-actions {
+    gap: 14px !important;
+}
+
+.staff-top {
+    order: 2;
+    height: 46px !important;
+    padding: 0 20px !important;
+    background: #15191e !important;
+    border: 1px solid #39424c !important;
+    color: #ffffff !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    box-shadow: 0 8px 25px rgba(0,0,0,.25);
+}
+
+
+/* Rezerviši ide prije CRM-a */
+
+.nav-cta {
+    order: 1;
+    font-size: 14px !important;
+    font-weight: 800 !important;
+    margin-right: 8px;
+}
+
+
+/* HERO TEKST */
+
+.hero-copy > p {
+    color: #d0d6dc !important;
+    font-size: 19px !important;
+    line-height: 1.75 !important;
+    max-width: 660px !important;
+}
+
+
+/* gornji PREMIUM DINING badge */
+
+.micro-pill {
+    color: #e0e4e8 !important;
+    font-size: 11px !important;
+    border-color: #46505b !important;
+}
+
+
+/* DUGMAD */
+
+.hero-actions .btn {
+    min-height: 54px;
+    padding: 0 22px !important;
+    font-size: 14px !important;
+}
+
+    .hero-actions .btn.ghost {
+        color: #ffffff !important;
+        border-color: #37414b !important;
+        background: #11171d !important;
+    }
+
+
+/* INFORMACIJE ISPOD HERO-A */
+
+.hero-meta {
+    border-top-color: #343d46 !important;
+}
+
+    .hero-meta small {
+        color: #aab4be !important;
+        font-size: 10px !important;
+        letter-spacing: .15em !important;
+    }
+
+    .hero-meta b {
+        color: #f0f2f4 !important;
+        font-size: 13px !important;
+    }
+
+
+/* SVI OPISI NA STRANICI */
+
+.section-head p,
+.reservation-copy p,
+.dg-experience-head > p {
+    color: #c5cdd5 !important;
+    font-size: 16px !important;
+    line-height: 1.8 !important;
+}
+
+
+/* JELOVNIK */
+
+.food-info h3 {
+    color: #ffffff !important;
+    font-size: 21px !important;
+}
+
+.food-info p {
+    color: #b8c1ca !important;
+    font-size: 14px !important;
+}
+
+.food-top span {
+    color: #a4aeba !important;
+}
+
+
+/* FORMULAR */
+
+.field > span {
+    color: #c4cbd2 !important;
+    font-size: 11px !important;
+}
+
+.field input,
+.field select,
+.field textarea {
+    border-color: #303943 !important;
+    background: #0b0f13 !important;
+    color: #ffffff !important;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+
+    .site-nav {
+        height: 70px !important;
+        padding: 0 14px !important;
+    }
+
+    .site-nav-actions .nav-cta {
+        display: none !important;
+    }
+
+    .staff-top {
+        order: initial;
+        height: 40px !important;
+        padding: 0 13px !important;
+        font-size: 11px !important;
+    }
+
+    .hero-copy > p {
+        font-size: 16px !important;
+    }
+
+    .hero-actions .btn {
+        width: 100%;
+        min-height: 52px;
+    }
+}
+.status-tabs button {
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: #929daa;
+    padding: 8px 11px;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+    .status-tabs button:hover {
+        color: #fff;
+    }
+
+    .status-tabs button.active {
+        color: #fff;
+        border-bottom-color: var(--accent);
+    }
+/* =========================================
+   PAYMENT MODAL
+   ========================================= */
+
+.payment-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, .76);
+    backdrop-filter: blur(8px);
+}
+
+.payment-modal {
+    position: relative;
+    width: 100%;
+    max-width: 520px;
+    padding: 32px;
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 22px;
+    background: #0d1217;
+    box-shadow: 0 30px 90px rgba(0,0,0,.55);
+}
+
+.payment-modal-close {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    width: 38px;
+    height: 38px;
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 10px;
+    background: rgba(255,255,255,.04);
+    color: #fff;
+    font-size: 23px;
+    cursor: pointer;
+}
+
+.payment-modal-label {
+    margin-bottom: 8px;
+    color: #e9a455;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.6px;
+}
+
+.payment-modal h2 {
+    margin: 0;
+    color: #fff;
+    font-size: 30px;
+}
+
+.payment-modal-subtitle {
+    margin: 7px 0 25px;
+    color: #81909e;
+    font-size: 14px;
+}
+
+.payment-summary {
+    overflow: hidden;
+    margin-bottom: 25px;
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 15px;
+    background: rgba(255,255,255,.025);
+}
+
+    .payment-summary > div {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 17px 19px;
+        border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+
+        .payment-summary > div:last-child {
+            border-bottom: 0;
+        }
+
+    .payment-summary span {
+        color: #8b98a5;
+        font-size: 13px;
+    }
+
+    .payment-summary strong {
+        color: #fff;
+        font-size: 16px;
+    }
+
+    .payment-summary .payment-total strong {
+        color: #efa455;
+        font-size: 23px;
+    }
+
+.payment-method-title {
+    margin-bottom: 11px;
+    color: #8795a2;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.payment-methods {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.payment-method {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 14px;
+    background: #10161c;
+    color: #fff;
+    text-align: left;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+    .payment-method:hover {
+        border-color: rgba(233,164,85,.45);
+    }
+
+    .payment-method.active {
+        border-color: #e9a455;
+        background: rgba(233,164,85,.09);
+    }
+
+    .payment-method > span {
+        font-size: 22px;
+    }
+
+    .payment-method b,
+    .payment-method small {
+        display: block;
+    }
+
+    .payment-method b {
+        margin-bottom: 3px;
+        font-size: 14px;
+    }
+
+    .payment-method small {
+        color: #778592;
+        font-size: 11px;
+    }
+
+.payment-confirm-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    width: 100%;
+    min-height: 54px;
+    border: 0;
+    border-radius: 14px;
+    background: #e9a455;
+    color: #111;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+    .payment-confirm-btn:hover {
+        filter: brightness(1.06);
+    }
+
+    .payment-confirm-btn:disabled {
+        opacity: .6;
+        cursor: wait;
+    }
+
+.payment-cancel-btn {
+    width: 100%;
+    margin-top: 10px;
+    padding: 11px;
+    border: 0;
+    background: transparent;
+    color: #7e8a95;
+    cursor: pointer;
+}
+
+    .payment-cancel-btn:hover {
+        color: #fff;
+    }
+
+@media (max-width: 600px) {
+
+    .payment-modal {
+        padding: 26px 18px 20px;
+        border-radius: 18px;
+    }
+
+    .payment-methods {
+        grid-template-columns: 1fr;
+    }
+
+    .payment-modal h2 {
+        font-size: 25px;
+    }
+}
+@media (max-width: 900px) {
+
+    .glass,
+    .float-card,
+    .booking-card,
+    .mobile-sidebar-overlay {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+
+    .hero-orb,
+    .auth-glow {
+        filter: none !important;
+    }
+
+    .marquee div,
+    .plate-ring {
+        animation: none !important;
+    }
+
+    .food-card,
+    .os-card,
+    .booking-card {
+        box-shadow: none !important;
+    }
+}

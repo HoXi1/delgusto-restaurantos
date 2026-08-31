@@ -103,9 +103,24 @@ async function stateFor(rid){
     prisma.restaurant.findUnique({where:{id:rid},include:{settings:true}}),
     prisma.menuItem.findMany({where:{restaurantId:rid},include:{category:true},orderBy:[{category:{sortOrder:'asc'}},{sortOrder:'asc'},{name:'asc'}]}),
     prisma.restaurantTable.findMany({where:{restaurantId:rid},orderBy:{id:'asc'}}),
-    prisma.reservation.findMany({where:{restaurantId:rid},orderBy:{createdAt:'desc'},take:250}),
-    prisma.order.findMany({where:{restaurantId:rid},include:{items:true},orderBy:{createdAt:'desc'},take:300}),
-    prisma.notification.findMany({where:{restaurantId:rid},orderBy:{createdAt:'desc'},take:100}),
+      prisma.reservation.findMany({
+          where: { restaurantId: rid },
+          orderBy: { createdAt: 'desc' },
+          take: 80
+      }),
+
+      prisma.order.findMany({
+          where: { restaurantId: rid },
+          include: { items: true },
+          orderBy: { createdAt: 'desc' },
+          take: 100
+      }),
+
+      prisma.notification.findMany({
+          where: { restaurantId: rid },
+          orderBy: { createdAt: 'desc' },
+          take: 40
+      }),
     prisma.user.findMany({where:{restaurantId:rid},select:{id:true,name:true,email:true,role:true,active:true,createdAt:true},orderBy:{id:'asc'}})
   ]);
   return {restaurant:safeRestaurant(restaurant),settings:restaurant.settings,menu:menu.map(menuDTO),tables,reservations,orders:orders.map(orderDTO),notifications,staff};
@@ -138,24 +153,115 @@ app.post('/api/public/:slug/reservations', publicLimiter, async (req,res)=>{
 });
 
 const publicOrderSchema=z.object({tableId:z.coerce.number().int().positive(),items:z.array(z.object({id:z.coerce.number().int().positive(),qty:z.coerce.number().int().min(1).max(20)})).min(1).max(40),note:z.string().trim().max(300).optional()});
-async function createOrder(r, body, source){
-  const table=await prisma.restaurantTable.findFirst({where:{id:body.tableId,restaurantId:r.id}}); if(!table) throw new Error('Sto nije pronađen.');
-  const ids=[...new Set(body.items.map(i=>i.id))];
-  const dbItems=await prisma.menuItem.findMany({where:{restaurantId:r.id,id:{in:ids},visible:true}});
-  const map=new Map(dbItems.map(i=>[i.id,i]));
-  const items=body.items.map(i=>{const m=map.get(i.id); return m?{menuItemId:m.id,name:m.name,price:m.price,qty:i.qty}:null}).filter(Boolean);
-  if(!items.length) throw new Error('Narudžba nema validnih artikala.');
-  const total=items.reduce((s,i)=>s+Number(i.price)*i.qty,0);
-  const order=await prisma.$transaction(async tx=>{
-    const o=await tx.order.create({data:{restaurantId:r.id,tableId:table.id,source,status:'NOVA',note:body.note||'',total:new Prisma.Decimal(total),items:{create:items}},include:{items:true}});
-    await tx.restaurantTable.update({where:{id:table.id},data:{status:'ZAUZET'}});
-    return o;
-  });
-  await notify(r.id,`${source==='QR'?'QR':'Nova'} narudžba · ${table.name}`,'order');
-  io.to(`restaurant:${r.id}`).emit('order:new',orderDTO(order));
-  io.to(`restaurant:${r.id}`).emit('state:changed');
-  return orderDTO(order);
+async function createOrder(r, body, source) {
+
+
+    const ids = [...new Set(body.items.map(i => i.id))];
+
+   
+
+    const [table, dbItems] = await Promise.all([
+        prisma.restaurantTable.findFirst({
+            where: {
+                id: body.tableId,
+                restaurantId: r.id
+            }
+        }),
+
+        prisma.menuItem.findMany({
+            where: {
+                restaurantId: r.id,
+                id: { in: ids },
+                visible: true
+            }
+        })
+    ]);
+
+   
+
+    if (!table) {
+        throw new Error('Sto nije pronađen.');
+    }
+
+    const map = new Map(
+        dbItems.map(i => [i.id, i])
+    );
+
+    const items = body.items
+        .map(i => {
+            const m = map.get(i.id);
+
+            return m ? {
+                menuItemId: m.id,
+                name: m.name,
+                price: m.price,
+                qty: i.qty
+            } : null;
+        })
+        .filter(Boolean);
+
+    if (!items.length) {
+        throw new Error('Narudžba nema validnih artikala.');
+    }
+
+    const total = items.reduce(
+        (s, i) => s + Number(i.price) * i.qty,
+        0
+    );
+
+    
+
+const [order] = await prisma.$transaction([
+
+    prisma.order.create({
+        data: {
+            restaurantId: r.id,
+            tableId: table.id,
+            source,
+            status: 'NOVA',
+            note: body.note || '',
+            total: new Prisma.Decimal(total),
+
+            items: {
+                create: items
+            }
+        },
+
+        include: {
+            items: true
+        }
+    }),
+
+    prisma.restaurantTable.update({
+        where: {
+            id: table.id
+        },
+        data: {
+            status: 'ZAUZET'
+        }
+    })
+
+]);
+
+
+
+    const dto = orderDTO(order);
+
+    io.to(`restaurant:${r.id}`)
+        .emit('order:new', dto);
+
+    notify(
+        r.id,
+        `${source === 'QR' ? 'QR' : 'Nova'} narudžba · ${table.name}`,
+        'order'
+    ).catch(err => {
+        console.error('Notification error:', err);
+    });
+
+    return dto;
 }
+
+    
 app.post('/api/public/:slug/orders', publicLimiter, async (req,res)=>{
   const parsed=publicOrderSchema.safeParse(req.body); if(!parsed.success) return res.status(400).json({error:'Narudžba nije validna.'});
   const r=await prisma.restaurant.findUnique({where:{slug:req.params.slug},include:{settings:true}}); if(!r?.active) return res.status(404).json({error:'Restoran nije pronađen.'});
@@ -185,11 +291,59 @@ app.use('/api', (req,res,next)=>{ if(req.path.startsWith('/public/')||req.path==
 app.get('/api/state', async (req,res)=> res.json(await stateFor(req.session.rid)));
 
 const orderSchema=z.object({tableId:z.coerce.number().int().positive(),items:z.array(z.object({id:z.coerce.number().int().positive(),qty:z.coerce.number().int().min(1).max(20)})).min(1).max(60),note:z.string().trim().max(300).optional(),source:z.enum(['WAITER']).optional()});
-app.post('/api/orders', roles('ADMIN','WAITER'), async (req,res)=>{
-  const parsed=orderSchema.safeParse(req.body); if(!parsed.success) return res.status(400).json({error:'Narudžba nije validna.'});
-  const r=await prisma.restaurant.findUnique({where:{id:req.session.rid}});
-  try{ const o=await createOrder(r,parsed.data,'WAITER'); await audit(req,'CREATE','Order',o.id,{tableId:o.tableId,total:o.total}); res.status(201).json(o); }catch(e){res.status(400).json({error:e.message});}
-});
+app.post(
+    '/api/orders',
+    roles('ADMIN', 'WAITER'),
+    async (req, res) => {
+
+        const parsed = orderSchema.safeParse(req.body);
+
+        if (!parsed.success) {
+            return res.status(400).json({
+                error: 'Narudžba nije validna.'
+            });
+        }
+
+        try {
+
+            // Već imamo ID restorana u sessionu.
+            // Ne trebamo ponovno pitati Neon za restoran.
+            const r = {
+                id: req.session.rid
+            };
+
+            const o = await createOrder(
+                r,
+                parsed.data,
+                'WAITER'
+            );
+
+            // Odmah odgovori konobaru
+            res.status(201).json(o);
+
+            // Audit ide u pozadini
+            audit(
+                req,
+                'CREATE',
+                'Order',
+                o.id,
+                {
+                    tableId: o.tableId,
+                    total: o.total
+                }
+            ).catch(err => {
+                console.error('Audit error:', err);
+            });
+
+        } catch (e) {
+
+            res.status(400).json({
+                error: e.message
+            });
+
+        }
+    }
+);
 app.put('/api/orders/:id/status', roles('ADMIN','WAITER','KITCHEN'), async (req,res)=>{
   const status=String(req.body.status||''); const allowed=['NOVA','U PRIPREMI','SPREMNA','POSLUŽENA','OTKAZANA']; if(!allowed.includes(status)) return res.status(400).json({error:'Status nije validan.'});
   const o=await prisma.order.findFirst({where:{id:Number(req.params.id),restaurantId:req.session.rid}}); if(!o) return res.status(404).json({error:'Narudžba nije pronađena.'});

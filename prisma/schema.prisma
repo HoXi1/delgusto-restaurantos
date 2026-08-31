@@ -4,13 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url = env("DATABASE_URL")
-}
-
-enum Role {
-  ADMIN
-  WAITER
-  KITCHEN
+  url      = env("DATABASE_URL")
 }
 
 model Restaurant {
@@ -27,15 +21,15 @@ model Restaurant {
   active        Boolean             @default(true)
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
-  settings      RestaurantSettings?
-  users         User[]
-  tables        RestaurantTable[]
+  auditLogs     AuditLog[]
   categories    MenuCategory[]
   menuItems     MenuItem[]
-  reservations  Reservation[]
-  orders        Order[]
   notifications Notification[]
-  auditLogs     AuditLog[]
+  orders        Order[]
+  reservations  Reservation[]
+  settings      RestaurantSettings?
+  tables        RestaurantTable[]
+  users         User[]
 }
 
 model RestaurantSettings {
@@ -74,8 +68,8 @@ model RestaurantTable {
   x            Int        @default(80)
   y            Int        @default(80)
   shape        String     @default("square")
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   orders       Order[]
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 
   @@index([restaurantId, status])
 }
@@ -103,8 +97,8 @@ model MenuItem {
   sortOrder    Int           @default(0)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+  category     MenuCategory? @relation(fields: [categoryId], references: [id])
   restaurant   Restaurant    @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  category     MenuCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   orderItems   OrderItem[]
 
   @@index([restaurantId, visible])
@@ -140,7 +134,7 @@ model Order {
   updatedAt    DateTime        @updatedAt
   paidAt       DateTime?
   restaurant   Restaurant      @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  table        RestaurantTable @relation(fields: [tableId], references: [id], onDelete: Restrict)
+  table        RestaurantTable @relation(fields: [tableId], references: [id])
   items        OrderItem[]
   payment      Payment?
 
@@ -154,8 +148,8 @@ model OrderItem {
   name       String
   price      Decimal   @db.Decimal(10, 2)
   qty        Int
+  menuItem   MenuItem? @relation(fields: [menuItemId], references: [id])
   order      Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  menuItem   MenuItem? @relation(fields: [menuItemId], references: [id], onDelete: SetNull)
 }
 
 model Payment {
@@ -191,4 +185,10 @@ model AuditLog {
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 
   @@index([restaurantId, createdAt])
+}
+
+enum Role {
+  ADMIN
+  WAITER
+  KITCHEN
 }
