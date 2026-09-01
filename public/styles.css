@@ -1454,3 +1454,222 @@
         box-shadow: none !important;
     }
 }
+/* OPCIJE STOLOVA */
+
+.table-wrapper {
+    position: absolute;
+}
+
+    .table-wrapper .table-v2 {
+        position: relative !important;
+        left: auto !important;
+        top: auto !important;
+    }
+
+
+
+@media (max-width: 700px) {
+    .table-options {
+        opacity: 1;
+    }
+}
+/* =====================================
+   TABLE MANAGEMENT
+   ===================================== */
+
+.table-management {
+    margin-top: 24px;
+}
+
+.table-management-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.table-management-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 18px;
+    border-top: 1px solid rgba(255,255,255,.07);
+}
+
+.table-management-info b {
+    display: block;
+    color: #fff;
+    font-size: 14px;
+}
+
+.table-management-info span {
+    display: block;
+    margin-top: 4px;
+    color: #71808d;
+    font-size: 11px;
+}
+
+.table-management-status {
+    padding: 6px 9px;
+    border-radius: 7px;
+    background: rgba(255,255,255,.05);
+    color: #71808d;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+    .table-management-status.busy {
+        background: rgba(255,91,105,.10);
+        color: #ff7180;
+    }
+
+.table-edit-btn,
+.table-delete-btn {
+    padding: 8px 13px;
+    border-radius: 8px;
+    background: transparent;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.table-edit-btn {
+    border: 1px solid rgba(255,255,255,.12);
+    color: #c5cdd4;
+}
+
+    .table-edit-btn:hover {
+        border-color: #e9a455;
+        color: #e9a455;
+    }
+
+.table-delete-btn {
+    border: 1px solid rgba(255,91,105,.25);
+    color: #ff7180;
+}
+
+    .table-delete-btn:hover {
+        background: rgba(255,91,105,.10);
+        border-color: #ff7180;
+    }
+
+@media (max-width: 700px) {
+
+    .table-management-row {
+        grid-template-columns: 1fr auto;
+    }
+
+    .table-management-status {
+        text-align: right;
+    }
+
+    .table-edit-btn,
+    .table-delete-btn {
+        width: 100%;
+    }
+}
+.table-edit-form {
+    display: grid;
+    gap: 14px;
+    margin: 22px 0;
+}
+
+    .table-edit-form label {
+        display: grid;
+        gap: 7px;
+        color: #8b98a5;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .table-edit-form input {
+        width: 100%;
+        min-height: 46px;
+        padding: 0 13px;
+        border: 1px solid rgba(255,255,255,.10);
+        border-radius: 10px;
+        background: #10161c;
+        color: #fff;
+        outline: none;
+    }
+
+        .table-edit-form input:focus {
+            border-color: #e9a455;
+        }
+.table-delete-modal {
+    text-align: center;
+}
+
+.delete-modal-icon {
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255, 75, 90, .10);
+    border: 1px solid rgba(255, 75, 90, .25);
+    color: #ff5c68;
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.delete-label {
+    color: #ff6b75;
+}
+
+.delete-table-info {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin: 22px 0;
+}
+
+    .delete-table-info > div {
+        padding: 13px 8px;
+        border: 1px solid rgba(255,255,255,.07);
+        border-radius: 10px;
+        background: rgba(255,255,255,.025);
+    }
+
+    .delete-table-info span {
+        display: block;
+        margin-bottom: 5px;
+        color: #778491;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: .7px;
+    }
+
+    .delete-table-info b {
+        color: #fff;
+        font-size: 13px;
+    }
+
+.table-delete-confirm {
+    width: 100%;
+    min-height: 48px;
+    border: 1px solid rgba(255, 75, 90, .35);
+    border-radius: 10px;
+    background: rgba(255, 75, 90, .12);
+    color: #ff6975;
+    font-weight: 800;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+    .table-delete-confirm:hover {
+        background: rgba(255, 75, 90, .20);
+        border-color: rgba(255, 75, 90, .55);
+    }
+
+    .table-delete-confirm:disabled {
+        opacity: .55;
+        cursor: not-allowed;
+    }
+
+@media (max-width: 600px) {
+    .delete-table-info {
+        grid-template-columns: 1fr;
+    }
+}

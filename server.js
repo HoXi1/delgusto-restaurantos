@@ -392,13 +392,127 @@ app.put('/api/reservations/:id', roles('ADMIN','WAITER'), async (req,res)=>{
 });
 
 const tableSchema=z.object({name:z.string().trim().min(1).max(50),zone:z.string().trim().max(50).optional(),capacity:z.coerce.number().int().min(1).max(30).optional(),x:z.coerce.number().int().min(0).max(2000).optional(),y:z.coerce.number().int().min(0).max(1200).optional(),shape:z.string().max(20).optional()});
-app.post('/api/tables', roles('ADMIN'), async (req,res)=>{
-  const p=tableSchema.safeParse(req.body);if(!p.success)return res.status(400).json({error:'Podaci stola nisu validni.'});
-  const x=await prisma.restaurantTable.create({data:{restaurantId:req.session.rid,zone:'SALA',capacity:4,x:80,y:80,shape:'square',...p.data}});await audit(req,'CREATE','Table',x.id);io.to(`restaurant:${req.session.rid}`).emit('state:changed');res.status(201).json(x);
+app.post('/api/tables', roles('ADMIN'), async (req, res) => {
+
+    const p = tableSchema.safeParse(req.body);
+
+    if (!p.success) {
+        return res.status(400).json({
+            error: 'Podaci stola nisu validni.'
+        });
+    }
+
+    const name = p.data.name.trim();
+
+    const existingTables = await prisma.restaurantTable.findMany({
+        where: {
+            restaurantId: req.session.rid
+        },
+        select: {
+            id: true,
+            name: true
+        }
+    });
+
+    const duplicate = existingTables.some(
+        t => t.name.trim().toLowerCase() === name.toLowerCase()
+    );
+
+    if (duplicate) {
+        return res.status(409).json({
+            error: `Sto "${name}" već postoji.`
+        });
+    }
+
+    const x = await prisma.restaurantTable.create({
+        data: {
+            restaurantId: req.session.rid,
+            zone: 'SALA',
+            capacity: 4,
+            x: 80,
+            y: 80,
+            shape: 'square',
+            ...p.data,
+            name
+        }
+    });
+
+    audit(req, 'CREATE', 'Table', x.id).catch(() => { });
+
+    io.to(`restaurant:${req.session.rid}`)
+        .emit('state:changed');
+
+    res.status(201).json(x);
 });
 app.put('/api/tables/:id', roles('ADMIN'), async (req,res)=>{
   const id=Number(req.params.id);const old=await prisma.restaurantTable.findFirst({where:{id,restaurantId:req.session.rid}});if(!old)return res.status(404).json({error:'Sto nije pronađen.'});
   const p=tableSchema.partial().safeParse(req.body);if(!p.success)return res.status(400).json({error:'Podaci nisu validni.'});const x=await prisma.restaurantTable.update({where:{id},data:p.data});await audit(req,'UPDATE','Table',id);io.to(`restaurant:${req.session.rid}`).emit('state:changed');res.json(x);
+});
+
+app.delete('/api/tables/:id', roles('ADMIN'), async (req, res) => {
+
+    const id = Number(req.params.id);
+
+    const table = await prisma.restaurantTable.findFirst({
+        where: {
+            id,
+            restaurantId: req.session.rid
+        }
+    });
+
+    if (!table) {
+        return res.status(404).json({
+            error: 'Sto nije pronađen.'
+        });
+    }
+
+    const activeOrders = await prisma.order.count({
+        where: {
+            restaurantId: req.session.rid,
+            tableId: id,
+            status: {
+                notIn: ['NAPLAĆENA', 'OTKAZANA']
+            }
+        }
+    });
+
+    if (activeOrders > 0) {
+        return res.status(400).json({
+            error: 'Ne možete obrisati sto koji ima aktivne narudžbe.'
+        });
+    }
+
+    const anyOrders = await prisma.order.count({
+        where: {
+            restaurantId: req.session.rid,
+            tableId: id
+        }
+    });
+
+    if (anyOrders > 0) {
+        return res.status(400).json({
+            error: 'Ovaj sto ima historiju narudžbi i ne može se trajno obrisati.'
+        });
+    }
+
+    await prisma.restaurantTable.delete({
+        where: {
+            id
+        }
+    });
+
+    audit(
+        req,
+        'DELETE',
+        'Table',
+        id,
+        { name: table.name }
+    ).catch(() => { });
+
+    io.to(`restaurant:${req.session.rid}`)
+        .emit('state:changed');
+
+    res.sendStatus(204);
 });
 
 app.put('/api/notifications/read-all', async (req,res)=>{ await prisma.notification.updateMany({where:{restaurantId:req.session.rid,read:false},data:{read:true}});io.to(`restaurant:${req.session.rid}`).emit('state:changed');res.json({ok:true}); });

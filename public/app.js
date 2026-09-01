@@ -547,8 +547,132 @@ function dashboardPage(){
   <div class="metric-grid"><article class="metric-card featured"><div class="metric-icon">${icon('revenue')}</div><span>Promet</span><strong>${money(revenue)}</strong><small>${icon('trend')} naplaćene narudžbe</small></article><article class="metric-card"><div class="metric-icon">${icon('orders')}</div><span>Aktivne narudžbe</span><strong>${active.length}</strong><small>${active.filter(o=>o.status==='NOVA').length} novih</small></article><article class="metric-card"><div class="metric-icon">${icon('table')}</div><span>Zauzetost</span><strong>${occupied}<i>/${state.tables.length}</i></strong><small>${Math.round((occupied/state.tables.length)*100||0)}% kapaciteta</small></article><article class="metric-card"><div class="metric-icon">${icon('calendar')}</div><span>Rezervacije</span><strong>${state.reservations.length}</strong><small>${pending} čeka potvrdu</small></article></div>
   <div class="dash-grid"><section class="os-card span2"><div class="card-head"><div><span>Servis uživo</span><h3>Aktivne narudžbe</h3></div><button class="text-btn" data-jump="orders">Sve narudžbe →</button></div><div class="activity-list">${latest.length?latest.map(o=>{const t=state.tables.find(x=>x.id===o.tableId);return `<div class="activity-row"><div class="activity-icon">${icon('orders')}</div><div class="activity-main"><b>${escapeHtml(t?.name||'Sto')} · #${o.id}</b><span>${o.items.map(i=>`${i.qty}× ${escapeHtml(i.name)}`).join(', ')}</span></div><span class="order-state ${statusClass(o.status)}">${o.status}</span><strong>${money(o.total)}</strong><time>${fmtTime(o.createdAt)}</time></div>`}).join(''):'<div class="empty-state">Nema narudžbi za prikaz.</div>'}</div></section><section class="os-card"><div class="card-head"><div><span>Status sale</span><h3>Stolovi</h3></div><button class="text-btn" data-jump="tables">Mapa →</button></div><div class="mini-floor">${state.tables.slice(0,8).map(t=>`<div class="mini-table ${t.status==='ZAUZET'?'busy':''}"><b>${escapeHtml(t.name.replace('Sto ',''))}</b><span>${t.status==='ZAUZET'?'ZAUZET':'SLOBODAN'}</span></div>`).join('')}</div></section></div>`;
 }
-function tablesPage(){return `<div class="page-toolbar"><div><p>Vizuelni raspored i trenutno stanje sale.</p></div><button class="btn" id="addTable">${icon('plus')} Dodaj sto</button></div><div class="floor-shell"><div class="floor-toolbar"><div><span class="legend free"></span>Slobodan</div><div><span class="legend busy"></span>Zauzet</div><div class="floor-zone">GLAVNA SALA</div></div><div class="floor-v2">${state.tables.map(t=>`<button class="table-v2 ${t.status==='ZAUZET'?'busy':''}" style="left:${Math.min(Number(t.x||80),760)}px;top:${Math.min(Number(t.y||80),460)}px" data-table="${t.id}"><span class="table-top">${t.capacity} mjesta</span><b>${escapeHtml(t.name)}</b><small>${escapeHtml(t.zone)}</small>${t.status==='ZAUZET'?'<i>AKTIVNO</i>':''}</button>`).join('')}</div></div>`}
-function reservationsPage(){const rows=state.reservations;return `<div class="page-toolbar"><p>Upravljanje dolascima i zahtjevima gostiju.</p><div class="search-box">${icon('search')}<input placeholder="Pretraži rezervacije" id="resSearch"></div></div><div class="os-card table-card"><table class="data-table"><thead><tr><th>Gost</th><th>Termin</th><th>Gosti</th><th>Zona</th><th>Status</th><th></th></tr></thead><tbody id="resBody">${renderReservations(rows)}</tbody></table></div>`}
+function tablesPage() {
+    return `
+        <div class="page-toolbar">
+            <div>
+                <p>Vizuelni raspored i trenutno stanje sale.</p>
+            </div>
+
+            <button class="btn" id="addTable">
+                ${icon('plus')} Dodaj sto
+            </button>
+        </div>
+
+        <div class="floor-shell">
+
+            <div class="floor-toolbar">
+                <div>
+                    <span class="legend free"></span>
+                    Slobodan
+                </div>
+
+                <div>
+                    <span class="legend busy"></span>
+                    Zauzet
+                </div>
+
+                <div class="floor-zone">
+                    GLAVNA SALA
+                </div>
+            </div>
+
+            <div class="floor-v2">
+
+                ${state.tables.map(t => `
+                    <div
+                        class="table-wrapper"
+                        style="
+                            left:${Math.min(Number(t.x || 80), 760)}px;
+                            top:${Math.min(Number(t.y || 80), 460)}px;
+                        "
+                    >
+
+                        <button
+                            class="table-v2 ${t.status === 'ZAUZET' ? 'busy' : ''}"
+                            data-table="${t.id}"
+                            type="button"
+                        >
+                            <span class="table-top">
+                                ${t.capacity} mjesta
+                            </span>
+
+                            <b>${escapeHtml(t.name)}</b>
+
+                            <small>
+                                ${escapeHtml(t.zone)}
+                            </small>
+
+                            ${t.status === 'ZAUZET'
+            ? '<i>AKTIVNO</i>'
+            : ''
+        }
+                        </button>
+
+
+                    </div>
+                `).join('')}
+
+            </div>
+        </div>
+
+
+        <div class="os-card table-management">
+
+            <div class="card-head">
+                <div>
+                    <span>UPRAVLJANJE</span>
+                    <h3>Svi stolovi</h3>
+                </div>
+
+                <span>${state.tables.length} stolova</span>
+            </div>
+
+            <div class="table-management-list">
+
+                ${state.tables.map(t => `
+                    <div class="table-management-row">
+
+                        <div class="table-management-info">
+                            <b>${escapeHtml(t.name)}</b>
+
+                            <span>
+                                ${escapeHtml(t.zone)}
+                                · ${t.capacity} mjesta
+                                · ID ${t.id}
+                            </span>
+                        </div>
+
+                        <div class="table-management-status
+                            ${t.status === 'ZAUZET' ? 'busy' : ''}
+                        ">
+                            ${t.status}
+                        </div>
+
+                        <button
+                            class="table-edit-btn"
+                            data-edit-table="${t.id}"
+                            type="button"
+                        >
+                            Uredi
+                        </button>
+
+                        <button
+                            class="table-delete-btn"
+                            data-delete-table="${t.id}"
+                            type="button"
+                        >
+                            Obriši
+                        </button>
+
+                    </div>
+                `).join('')}
+
+            </div>
+
+        </div>
+    `;
+}function reservationsPage(){const rows=state.reservations;return `<div class="page-toolbar"><p>Upravljanje dolascima i zahtjevima gostiju.</p><div class="search-box">${icon('search')}<input placeholder="Pretraži rezervacije" id="resSearch"></div></div><div class="os-card table-card"><table class="data-table"><thead><tr><th>Gost</th><th>Termin</th><th>Gosti</th><th>Zona</th><th>Status</th><th></th></tr></thead><tbody id="resBody">${renderReservations(rows)}</tbody></table></div>`}
 function renderReservations(rows){return rows.map(r=>`<tr><td><div class="person-cell"><div class="avatar sm">${escapeHtml((r.name||'?').split(' ').map(x=>x[0]).join('').slice(0,2))}</div><div><b>${escapeHtml(r.name)}</b><span>${escapeHtml(r.phone)}</span></div></div></td><td><b>${escapeHtml(r.date||'')}</b><span class="sub">${escapeHtml(r.time||'')}</span></td><td>${r.guests}</td><td>${escapeHtml(r.zone||'—')}</td><td><span class="order-state ${statusClass(r.status)}">${escapeHtml(r.status)}</span></td><td><div class="row-actions">${r.status==='NA ČEKANJU'?`<button class="mini-btn ok" data-res-ok="${r.id}">${icon('check')}</button><button class="mini-btn" data-res-no="${r.id}">${icon('x')}</button>`:''}</div></td></tr>`).join('')}
 function menuPage() {
     const cats = [...new Set(state.menu.map(x => x.category))];
@@ -1304,6 +1428,8 @@ function openPaymentModal(table) {
 
         });
 
+    
+
     modal.querySelector('#paymentConfirm').onclick = async () => {
 
         const button = modal.querySelector('#paymentConfirm');
@@ -1347,6 +1473,470 @@ function openPaymentModal(table) {
     };
 }
 
+if (!window.tableEditHandlerBound) {
+
+    window.tableEditHandlerBound = true;
+
+    document.addEventListener('click', e => {
+
+        const btn = e.target.closest('[data-edit-table]');
+
+        if (!btn) return;
+
+        const tableId = Number(btn.dataset.editTable);
+
+        const table = state.tables.find(
+            t => t.id === tableId
+        );
+
+        if (!table) {
+            console.error('Sto nije pronađen:', tableId);
+            return;
+        }
+
+        openTableEditModal(table);
+    });
+}
+
+function openTableEditModal(table) {
+
+    const modal = document.createElement('div');
+    modal.className = 'payment-modal-overlay';
+
+    modal.innerHTML = `
+        <div class="payment-modal">
+
+            <button class="payment-modal-close" type="button">×</button>
+
+            <div class="payment-modal-label">
+                UREDI STO
+            </div>
+
+            <h2>${escapeHtml(table.name)}</h2>
+
+            <p class="payment-modal-subtitle">
+                Izmijeni podatke stola
+            </p>
+
+            <div class="table-edit-form">
+
+                <label>
+                    Naziv stola
+                    <input
+                        type="text"
+                        id="editTableName"
+                        value="${escapeHtml(table.name)}"
+                    >
+                </label>
+
+                <label>
+                    Broj mjesta
+                    <input
+                        type="number"
+                        id="editTableCapacity"
+                        min="1"
+                        max="30"
+                        value="${Number(table.capacity || 4)}"
+                    >
+                </label>
+
+                <label>
+                    Zona
+                    <input
+                        type="text"
+                        id="editTableZone"
+                        value="${escapeHtml(table.zone || 'GLAVNA SALA')}"
+                    >
+                </label>
+
+            </div>
+
+            <button
+                type="button"
+                class="payment-confirm-btn"
+                id="saveTableChanges"
+            >
+                Sačuvaj izmjene
+                <span>→</span>
+            </button>
+
+            <button
+                type="button"
+                class="payment-cancel-btn"
+            >
+                Odustani
+            </button>
+
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const closeModal = () => {
+        modal.remove();
+    };
+
+    modal.querySelector('.payment-modal-close').onclick = closeModal;
+    modal.querySelector('.payment-cancel-btn').onclick = closeModal;
+
+    modal.addEventListener('click', e => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+
+    modal.querySelector('#saveTableChanges').onclick = async () => {
+
+        const button = modal.querySelector('#saveTableChanges');
+
+        const name =
+            modal.querySelector('#editTableName').value.trim();
+
+        const capacity =
+            Number(modal.querySelector('#editTableCapacity').value);
+
+        const zone =
+            modal.querySelector('#editTableZone').value.trim();
+
+        if (!name) {
+            toast('Naziv stola je obavezan.', 'err');
+            return;
+        }
+
+        if (!capacity || capacity < 1) {
+            toast('Broj mjesta nije validan.', 'err');
+            return;
+        }
+
+        if (!zone) {
+            toast('Zona je obavezna.', 'err');
+            return;
+        }
+
+        try {
+
+            button.disabled = true;
+            button.textContent = 'Čuvam...';
+
+            const updated = await api(
+                `/api/tables/${table.id}`,
+                {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        name,
+                        capacity,
+                        zone
+                    })
+                }
+            );
+
+            state.tables = state.tables.map(
+                t => t.id === table.id
+                    ? updated
+                    : t
+            );
+
+            closeModal();
+            renderPortal();
+
+            toast(`${updated.name} je ažuriran.`);
+
+        } catch (err) {
+
+            button.disabled = false;
+            button.innerHTML = `
+                Sačuvaj izmjene
+                <span>→</span>
+            `;
+
+            toast(
+                err.message || 'Greška prilikom izmjene stola.',
+                'err'
+            );
+        }
+    };
+}
+
+function openTableCreateModal() {
+
+    const modal = document.createElement('div');
+    modal.className = 'payment-modal-overlay';
+
+    const suggestedName = `Sto ${state.tables.length + 1}`;
+
+    modal.innerHTML = `
+        <div class="payment-modal">
+
+            <button class="payment-modal-close" type="button">×</button>
+
+            <div class="payment-modal-label">
+                NOVI STO
+            </div>
+
+            <h2>Dodaj sto</h2>
+
+            <p class="payment-modal-subtitle">
+                Unesi podatke novog stola
+            </p>
+
+            <div class="table-edit-form">
+
+                <label>
+                    Naziv stola
+                    <input
+                        type="text"
+                        id="newTableName"
+                        value="${escapeHtml(suggestedName)}"
+                    >
+                </label>
+
+                <label>
+                    Broj mjesta
+                    <input
+                        type="number"
+                        id="newTableCapacity"
+                        min="1"
+                        max="30"
+                        value="4"
+                    >
+                </label>
+
+                <label>
+                    Zona
+                    <input
+                        type="text"
+                        id="newTableZone"
+                        value="GLAVNA SALA"
+                    >
+                </label>
+
+            </div>
+
+            <button
+                type="button"
+                class="payment-confirm-btn"
+                id="createTableBtn"
+            >
+                Dodaj sto
+                <span>→</span>
+            </button>
+
+            <button
+                type="button"
+                class="payment-cancel-btn"
+            >
+                Odustani
+            </button>
+
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const closeModal = () => {
+        modal.remove();
+    };
+
+    modal.querySelector('.payment-modal-close').onclick = closeModal;
+    modal.querySelector('.payment-cancel-btn').onclick = closeModal;
+
+    modal.addEventListener('click', e => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+
+    modal.querySelector('#createTableBtn').onclick = async () => {
+
+        const button = modal.querySelector('#createTableBtn');
+
+        const name =
+            modal.querySelector('#newTableName').value.trim();
+
+        const capacity =
+            Number(modal.querySelector('#newTableCapacity').value);
+
+        const zone =
+            modal.querySelector('#newTableZone').value.trim();
+
+        if (!name) {
+            toast('Naziv stola je obavezan.', 'err');
+            return;
+        }
+
+        if (!capacity || capacity < 1) {
+            toast('Broj mjesta nije validan.', 'err');
+            return;
+        }
+
+        if (!zone) {
+            toast('Zona je obavezna.', 'err');
+            return;
+        }
+
+        try {
+
+            button.disabled = true;
+            button.textContent = 'Dodajem...';
+
+            const created = await api('/api/tables', {
+                method: 'POST',
+                body: JSON.stringify({
+                    name,
+                    capacity,
+                    zone
+                })
+            });
+
+            state.tables.push(created);
+
+            closeModal();
+            renderPortal();
+
+            toast(`${created.name} je dodan.`);
+
+        } catch (err) {
+
+            button.disabled = false;
+
+            button.innerHTML = `
+                Dodaj sto
+                <span>→</span>
+            `;
+
+            toast(
+                err.message || 'Greška prilikom dodavanja stola.',
+                'err'
+            );
+        }
+    };
+}
+
+function openTableDeleteModal(table) {
+
+    const modal = document.createElement('div');
+    modal.className = 'payment-modal-overlay';
+
+    modal.innerHTML = `
+        <div class="payment-modal table-delete-modal">
+
+            <button
+                class="payment-modal-close"
+                type="button"
+            >
+                ×
+            </button>
+
+            <div class="delete-modal-icon">
+                !
+            </div>
+
+            <div class="payment-modal-label delete-label">
+                BRISANJE STOLA
+            </div>
+
+            <h2>Obrisati ${escapeHtml(table.name)}?</h2>
+
+            <p class="payment-modal-subtitle">
+                Ova radnja će trajno ukloniti sto iz sistema.
+            </p>
+
+            <div class="delete-table-info">
+
+                <div>
+                    <span>Naziv</span>
+                    <b>${escapeHtml(table.name)}</b>
+                </div>
+
+                <div>
+                    <span>Zona</span>
+                    <b>${escapeHtml(table.zone)}</b>
+                </div>
+
+                <div>
+                    <span>Broj mjesta</span>
+                    <b>${Number(table.capacity)}</b>
+                </div>
+
+            </div>
+
+            <button
+                type="button"
+                class="table-delete-confirm"
+                id="confirmTableDelete"
+            >
+                Obriši sto
+            </button>
+
+            <button
+                type="button"
+                class="payment-cancel-btn"
+            >
+                Odustani
+            </button>
+
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const closeModal = () => {
+        modal.remove();
+    };
+
+    modal.querySelector('.payment-modal-close').onclick =
+        closeModal;
+
+    modal.querySelector('.payment-cancel-btn').onclick =
+        closeModal;
+
+    modal.addEventListener('click', e => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+
+    modal.querySelector('#confirmTableDelete').onclick =
+        async () => {
+
+            const button =
+                modal.querySelector('#confirmTableDelete');
+
+            try {
+
+                button.disabled = true;
+                button.textContent = 'Brišem...';
+
+                await api(
+                    `/api/tables/${table.id}`,
+                    {
+                        method: 'DELETE'
+                    }
+                );
+
+                state.tables = state.tables.filter(
+                    t => t.id !== table.id
+                );
+
+                closeModal();
+
+                renderPortal();
+
+                toast(`${table.name} je obrisan.`);
+
+            } catch (err) {
+
+                button.disabled = false;
+                button.textContent = 'Obriši sto';
+
+                toast(
+                    err.message ||
+                    'Greška prilikom brisanja stola.',
+                    'err'
+                );
+            }
+        };
+}
     function bindPageEvents() {
 
         document.querySelectorAll('[data-jump]').forEach(b => {
@@ -1363,17 +1953,8 @@ function openPaymentModal(table) {
             };
         });
 
-        document.querySelector('#addTable')?.addEventListener('click', async () => {
-            const name = prompt('Naziv stola:', `Sto ${state.tables.length + 1}`);
-            if (!name) return;
-
-            await api('/api/tables', {
-                method: 'POST',
-                body: JSON.stringify({ name })
-            });
-
-            await loadState();
-            toast('Sto je dodan.');
+        document.querySelector('#addTable')?.addEventListener('click', () => {
+            openTableCreateModal();
         });
 
         document.querySelector('#resSearch')?.addEventListener('input', e => {
@@ -1388,6 +1969,23 @@ function openPaymentModal(table) {
                     )
                 );
         });
+
+        document.querySelectorAll('[data-delete-table]').forEach(btn => {
+
+            btn.onclick = () => {
+
+                const tableId = Number(btn.dataset.deleteTable);
+
+                const table = state.tables.find(
+                    t => t.id === tableId
+                );
+
+                if (!table) return;
+
+                openTableDeleteModal(table);
+            };
+        });
+
 
         document.querySelectorAll('[data-res-ok]').forEach(b => {
             b.onclick = () =>
